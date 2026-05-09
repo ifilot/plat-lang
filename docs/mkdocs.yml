@@ -1,0 +1,81 @@
+site_name: plat-lang
+site_description: An experimental interpreter language where code stays small, rules stay regular, and the keywords come from Limburg.
+site_url: https://ifilot.github.io/plat-lang/
+repo_url: https://github.com/ifilot/plat-lang
+repo_name: ifilot/plat-lang
+docs_dir: .
+site_dir: ../site
+use_directory_urls: false
+exclude_docs: |
+  mkdocs.yml
+  requirements.txt
+  check_links.py
+
+theme:
+  name: material
+  logo: assets/images/plat-lang-logo-navbar.svg
+  favicon: assets/images/plat-lang-logo.svg
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: red
+      accent: amber
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: folder
+      fallback_to_default: true
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+          theme:
+            language: en
+          nav:
+            - Home: index.md
+            - Getting Started: getting-started.md
+            - Language Tour: language-tour.md
+            - Examples: examples.md
+        - locale: li
+          name: Limburgs
+          build: true
+          theme:
+            language: en
+          nav:
+            - Heem: index.md
+            - Aan de geng: getting-started.md
+            - Taolrónj: language-tour.md
+            - Veurbeelde: examples.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ifilot/plat-lang
+      name: plat-lang on GitHub
+    - icon: fontawesome/solid/code
+      link: https://github.com/ifilot/plat-lang/tree/main/examples
+      name: Example scripts
+
+extra_css:
+  - assets/stylesheets/plat-lang.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true

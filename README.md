@@ -81,6 +81,20 @@ build/platlang --lang li examples/li/fibonacci.plat
 ctest --test-dir build
 ```
 
+## Documentation
+
+```sh
+source ~/.venv/bin/activate
+pip install -r docs/requirements.txt
+mkdocs serve -f docs/mkdocs.yml
+```
+
+Build static docs:
+
+```sh
+mkdocs build -f docs/mkdocs.yml --strict
+```
+
 ## Project Notes
 
 Design notes live in `dev/design.md`.

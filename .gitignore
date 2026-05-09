@@ -29,3 +29,6 @@ platlang_lexer.h
 *.swo
 .DS_Store
 Thumbs.db
+
+# documentation
+site
