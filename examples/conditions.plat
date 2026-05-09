@@ -1,0 +1,14 @@
+# Truthiness and optional else branches.
+
+loat name = ""
+loat fallback = "onbekend"
+
+es name:
+    aafdrokke(name)
+angesj:
+    aafdrokke(fallback)
+enj
+
+es niks:
+    aafdrokke("dit versjient neet")
+enj

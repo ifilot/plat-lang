@@ -1,0 +1,13 @@
+# Tables can be used as records and arrays.
+
+loat user = {
+    name = "Alice",
+    age = 30,
+}
+
+loat nums = { 10, 20, 30, }
+loat field = "name"
+
+aafdrokke(user.name)
+aafdrokke(user[field])
+aafdrokke(nums[0])
