@@ -28,7 +28,8 @@ enj
 aafdrokke(fib(10))
 ```
 
-More scripts live in `examples/`.
+More scripts live in `examples/en` and `examples/li`. The `li` examples use
+Limburgish comments.
 
 ## Build
 
@@ -53,7 +54,7 @@ cmake --build build
 Execute a script:
 
 ```sh
-build/platlang examples/fibonacci.plat
+build/platlang examples/en/fibonacci.plat
 ```
 
 Print the version:
@@ -65,13 +66,13 @@ build/platlang --version
 Print the AST:
 
 ```sh
-build/platlang --ast examples/fibonacci.plat
+build/platlang --ast examples/en/fibonacci.plat
 ```
 
 Use Limburgish diagnostics:
 
 ```sh
-build/platlang --lang li examples/fibonacci.plat
+build/platlang --lang li examples/li/fibonacci.plat
 ```
 
 ## Test
