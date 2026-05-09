@@ -1,0 +1,5 @@
+loat naam = "Jan"
+loat taal = "plat-lang"
+
+aafdrokke("Hallo, " + naam)
+aafdrokke("Welkom bie " + taal)

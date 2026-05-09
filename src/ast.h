@@ -461,9 +461,9 @@ public:
 };
 
 /**
- * Represents an `es` expression.
+ * Represents an `es` conditional statement.
  */
-class IfExpr final : public Expr {
+class IfStmt final : public Stmt {
 private:
     ExprPtr condition_;
     std::vector<StmtPtr> then_body_;
@@ -471,16 +471,16 @@ private:
 
 public:
     /**
-     * Creates an `es` expression.
+     * Creates an `es` conditional statement.
      *
      * @param location Source location of the `es` keyword.
      * @param condition Condition expression.
      * @param then_body Statements evaluated when the condition is truthy.
      * @param else_body Statements evaluated when the condition is falsy.
      */
-    IfExpr(SourceLocation location, ExprPtr condition,
+    IfStmt(SourceLocation location, ExprPtr condition,
            std::vector<StmtPtr> then_body, std::vector<StmtPtr> else_body)
-        : Expr(location),
+        : Stmt(location),
           condition_(std::move(condition)),
           then_body_(std::move(then_body)),
           else_body_(std::move(else_body)) {}

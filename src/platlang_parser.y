@@ -45,7 +45,7 @@ plat::DiagnosticReporter *platlang_diagnostics = nullptr;
 %token NIKS WOAR NEETWOAR
 %token EQ NEQ LE GE AND OR
 
-%type <stmt> top_level_stmt stmt function_decl var_decl assignment expr_stmt return_stmt break_stmt continue_stmt while_stmt for_stmt
+%type <stmt> top_level_stmt stmt function_decl var_decl assignment expr_stmt return_stmt break_stmt continue_stmt if_stmt while_stmt for_stmt
 %type <expr> expr logical_or logical_and equality comparison term factor unary postfix primary literal table table_key
 %type <stmts> top_level_list block maybe_else
 %type <exprs> argument_list maybe_arguments
@@ -134,6 +134,7 @@ stmt:
 | return_stmt { $$ = $1; }
 | break_stmt { $$ = $1; }
 | continue_stmt { $$ = $1; }
+| if_stmt { $$ = $1; }
 | while_stmt { $$ = $1; }
 | for_stmt { $$ = $1; }
 ;
@@ -176,6 +177,14 @@ continue_stmt:
   WEIER { $$ = new plat::ContinueStmt(LOC(@1)); }
 ;
 
+if_stmt:
+  ES expr ':' block maybe_else ENJ {
+    $$ = new plat::IfStmt(LOC(@1), plat::ExprPtr($2), std::move(*$4), std::move(*$5));
+    delete $4;
+    delete $5;
+  }
+;
+
 while_stmt:
   ZOLANG expr ':' block ENJ {
     $$ = new plat::WhileStmt(LOC(@1), plat::ExprPtr($2), std::move(*$4));
@@ -192,12 +201,7 @@ for_stmt:
 ;
 
 expr:
-  ES expr ':' block maybe_else ENJ {
-    $$ = new plat::IfExpr(LOC(@1), plat::ExprPtr($2), std::move(*$4), std::move(*$5));
-    delete $4;
-    delete $5;
-  }
-| logical_or { $$ = $1; }
+  logical_or { $$ = $1; }
 ;
 
 maybe_else:

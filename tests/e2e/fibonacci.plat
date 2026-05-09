@@ -1,0 +1,9 @@
+funksie fib(n):
+    es n < 2:
+        trok n
+    angesj:
+        trok fib(n - 1) + fib(n - 2)
+    enj
+enj
+
+aafdrokke(fib(10))

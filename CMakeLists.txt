@@ -4,6 +4,7 @@ project(platlang LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
+enable_testing()
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
@@ -24,13 +25,30 @@ FLEX_TARGET(
 
 ADD_FLEX_BISON_DEPENDENCY(PlatLangLexer PlatLangParser)
 
-add_executable(platlang
+add_library(platlang_core
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ast_printer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/diagnostics.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/interpreter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/value.cpp
+)
+
+target_include_directories(platlang_core PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_compile_options(platlang_core PRIVATE
+  $<$<C_COMPILER_ID:MSVC>:/W3>
+  $<$<NOT:$<C_COMPILER_ID:MSVC>>:-Wall>
+)
+
+add_executable(platlang
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${BISON_PlatLangParser_OUTPUTS}
   ${FLEX_PlatLangLexer_OUTPUTS}
 )
+
+target_link_libraries(platlang PRIVATE platlang_core)
 
 target_include_directories(platlang PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -41,3 +59,34 @@ target_compile_options(platlang PRIVATE
   $<$<C_COMPILER_ID:MSVC>:/W3>
   $<$<NOT:$<C_COMPILER_ID:MSVC>>:-Wall>
 )
+
+add_executable(platlang_unit_tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/diagnostics_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/test_main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/value_test.cpp
+)
+
+target_link_libraries(platlang_unit_tests PRIVATE platlang_core)
+
+target_include_directories(platlang_unit_tests PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit
+)
+
+add_test(NAME unit_tests COMMAND platlang_unit_tests)
+
+function(add_platlang_e2e_test name)
+  add_test(
+    NAME e2e_${name}
+    COMMAND
+      bash
+      ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e/run_golden_test.sh
+      $<TARGET_FILE:platlang>
+      ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e/${name}
+  )
+endfunction()
+
+add_platlang_e2e_test(hello)
+add_platlang_e2e_test(fibonacci)
+add_platlang_e2e_test(tables)
+add_platlang_e2e_test(loops)
+add_platlang_e2e_test(undeclared_variable_li)

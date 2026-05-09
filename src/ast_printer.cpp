@@ -147,6 +147,23 @@ void AstPrinter::print_stmt(const Stmt &stmt) {
         return;
     }
 
+    if (const auto *node = dynamic_cast<const IfStmt *>(&stmt)) {
+        print_line("IfStmt");
+        print_location(node->location());
+        *stream_ << '\n';
+
+        push_indent();
+        print_line("condition");
+        *stream_ << '\n';
+        push_indent();
+        print_expr(node->condition());
+        pop_indent();
+        print_stmt_list("then", node->then_body());
+        print_stmt_list("else", node->else_body());
+        pop_indent();
+        return;
+    }
+
     print_line("UnknownStmt");
     print_location(stmt.location());
     *stream_ << '\n';
@@ -291,23 +308,6 @@ void AstPrinter::print_expr(const Expr &expr) {
             pop_indent();
             pop_indent();
         }
-        pop_indent();
-        return;
-    }
-
-    if (const auto *node = dynamic_cast<const IfExpr *>(&expr)) {
-        print_line("IfExpr");
-        print_location(node->location());
-        *stream_ << '\n';
-
-        push_indent();
-        print_line("condition");
-        *stream_ << '\n';
-        push_indent();
-        print_expr(node->condition());
-        pop_indent();
-        print_stmt_list("then", node->then_body());
-        print_stmt_list("else", node->else_body());
         pop_indent();
         return;
     }

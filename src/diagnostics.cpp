@@ -43,7 +43,8 @@ public:
 };
 
 constexpr DiagnosticTemplate kEnglishDiagnostics[] = {
-    {DiagnosticId::Usage, "usage: platlang [--lang {language}] [program.plat]"},
+    {DiagnosticId::Usage,
+     "usage: platlang [--ast] [--version] [--lang {language}] [program.plat]"},
     {DiagnosticId::InvalidLanguage, "unsupported diagnostic language '{language}'"},
     {DiagnosticId::FileOpenFailed, "could not open file '{path}'"},
     {DiagnosticId::SyntaxError, "syntax error"},
@@ -68,7 +69,8 @@ constexpr DiagnosticTemplate kEnglishDiagnostics[] = {
 };
 
 constexpr DiagnosticTemplate kLimburgishDiagnostics[] = {
-    {DiagnosticId::Usage, "gebroek: platlang [--lang {language}] [program.plat]"},
+    {DiagnosticId::Usage,
+     "gebroek: platlang [--ast] [--version] [--lang {language}] [program.plat]"},
     {DiagnosticId::InvalidLanguage, "diagnosetaol '{language}' weurt neet ondersteund"},
     {DiagnosticId::FileOpenFailed, "kin besjtand '{path}' neet opmaake"},
     {DiagnosticId::SyntaxError, "syntaxisfout"},

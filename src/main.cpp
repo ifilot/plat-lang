@@ -1,10 +1,13 @@
 #include "ast.h"
 #include "ast_printer.h"
 #include "diagnostics.h"
+#include "interpreter.h"
+#include "version.h"
 
 #include <cstdio>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 extern FILE *yyin;
@@ -26,6 +29,7 @@ private:
     plat::Language language_ = plat::Language::English;
     const char *input_path_ = nullptr;
     bool print_ast_ = false;
+    bool print_version_ = false;
 
 public:
     /**
@@ -50,6 +54,13 @@ public:
     void set_print_ast(bool print_ast) { print_ast_ = print_ast; }
 
     /**
+     * Enables or disables version printing.
+     *
+     * @param print_version Whether to print the version.
+     */
+    void set_print_version(bool print_version) { print_version_ = print_version; }
+
+    /**
      * Returns the selected diagnostic language.
      *
      * @return Diagnostic language.
@@ -69,6 +80,13 @@ public:
      * @return True when AST printing is enabled.
      */
     bool print_ast() const { return print_ast_; }
+
+    /**
+     * Returns whether the executable should print its version.
+     *
+     * @return True when version printing is enabled.
+     */
+    bool print_version() const { return print_version_; }
 };
 
 /**
@@ -126,6 +144,11 @@ std::optional<CommandLineOptions> parse_command_line(
             continue;
         }
 
+        if (arg == "--version") {
+            options.set_print_version(true);
+            continue;
+        }
+
         if (arg.starts_with("--")) {
             reporter.error(plat::DiagnosticId::Usage);
             return std::nullopt;
@@ -156,6 +179,11 @@ int main(int argc, char **argv) {
         parse_command_line(argc, argv, bootstrap_reporter);
     if (!options.has_value()) {
         return 2;
+    }
+
+    if (options->print_version()) {
+        std::cout << "plat-lang " << plat::kVersion << '\n';
+        return 0;
     }
 
     plat::DiagnosticReporter reporter(options->language(), std::cerr);
@@ -189,8 +217,19 @@ int main(int argc, char **argv) {
             printer.print_program(*platlang_program);
         }
     } else {
-        std::printf("parsed %zu top-level statement(s)\n",
-                    platlang_program ? platlang_program->statements().size() : 0);
+        try {
+            if (platlang_program != nullptr) {
+                plat::Interpreter interpreter(reporter, std::cout);
+                interpreter.execute_program(*platlang_program);
+            }
+        } catch (const plat::PlatlangError &) {
+            return 1;
+        } catch (const std::exception &error) {
+            reporter.error(
+                plat::DiagnosticId::InternalError, std::nullopt,
+                {plat::DiagnosticArg("message", error.what())});
+            return 1;
+        }
     }
 
     return 0;

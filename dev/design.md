@@ -202,12 +202,11 @@ Keywords and literal type names are protected as well.
 
 ## Expressions
 
-`plat-lang` is expression-oriented. Most constructs return values and can be
-composed naturally. Assignment is not an expression.
+`plat-lang` is expression-friendly, but control flow remains statement-based.
+Assignment is not an expression.
 
 ```platlang
 loat x = 1 + 2 * 3
-loat max = es a > b: a angesj: b enj
 ```
 
 ## Functions
@@ -309,8 +308,7 @@ es klaar:
 enj
 ```
 
-When used as an expression, an `es` without `angesj:` evaluates to `niks` if
-the condition is falsy.
+`es` is statement-only and does not produce a value.
 
 Loops use `zolang` and `:`.
 
@@ -505,6 +503,7 @@ may be used as a private-use BCP 47 tag. Source syntax is unaffected by the
 diagnostic language; all keywords remain Limburgian.
 
 `plat-lang` source files use the `.plat` extension.
+The first interpreter version is `0.1.0`.
 
 Most language behavior should be expressible in terms of values flowing through
 expressions inside lexical environments, with tables and global function
