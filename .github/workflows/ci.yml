@@ -97,8 +97,8 @@ jobs:
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-flex
-            mingw-w64-ucrt-x86_64-bison
+            flex
+            bison
 
       - name: Configure static build
         run: >
