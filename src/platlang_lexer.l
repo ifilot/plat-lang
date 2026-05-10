@@ -61,6 +61,7 @@ static std::string unescape_string(const char *text, int length) {
 "veur"                    { return VEUR; }
 "enj"                     { return ENJ; }
 "trok"                    { return TROK; }
+"trök"                    { return TROK; }
 "aafbraeke"               { return AAFBRAEKE; }
 "euversjlaon"             { return EUVERSJLAON; }
 "niks"                    { return NIKS; }

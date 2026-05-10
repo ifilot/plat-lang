@@ -14,6 +14,7 @@ inline constexpr std::string_view kPrintBuiltinAscii = "aafdrokke";
 inline constexpr std::string_view kPrintBuiltinComposed = "aafdrökke";
 inline constexpr std::string_view kPrintBuiltinDecomposed = "aafdro\xCC\x88kke";
 inline constexpr std::string_view kInputBuiltin = "invuier";
+inline constexpr std::string_view kTypeBuiltin = "waatis";
 inline constexpr std::string_view kNumberTypeAscii = "nommer";
 inline constexpr std::string_view kNumberTypeComposed = "nómmer";
 inline constexpr std::string_view kNumberTypeDecomposed = "no\xCC\x81mmer";
@@ -66,7 +67,7 @@ std::shared_ptr<const std::unordered_set<std::string>> make_protected_names() {
             "neetwoar", "niks", std::string(kNumberTypeAscii),
             std::string(kNumberTypeComposed),
             std::string(kNumberTypeDecomposed), "teks", "trok", "veur",
-            "euversjlaon", "woar", "zolang"});
+            "euversjlaon", std::string(kTypeBuiltin), "woar", "zolang"});
 }
 
 /**
@@ -88,6 +89,46 @@ bool is_print_builtin_name(std::string_view name) {
  */
 bool is_input_builtin_name(std::string_view name) {
     return name == kInputBuiltin;
+}
+
+/**
+ * Returns whether a name refers to the type built-in.
+ *
+ * @param name Candidate function name.
+ * @return True when the name is a supported alias.
+ */
+bool is_type_builtin_name(std::string_view name) {
+    return name == kTypeBuiltin;
+}
+
+/**
+ * Returns the user-facing runtime type name for a value.
+ *
+ * @param value Runtime value.
+ * @return Localized type name.
+ */
+std::string_view value_type_name(const Value &value) {
+    if (value.is_nil()) {
+        return "niks";
+    }
+
+    if (value.is_number()) {
+        return kNumberTypeComposed;
+    }
+
+    if (value.is_bool()) {
+        return "woar";
+    }
+
+    if (value.is_string()) {
+        return "teks";
+    }
+
+    if (value.is_table()) {
+        return "portefeuil";
+    }
+
+    throw std::logic_error("unknown value type");
 }
 
 /**
@@ -474,6 +515,10 @@ Value Interpreter::call_function(const CallExpr &call) {
         return call_input_builtin(call.callee(), args, call.location());
     }
 
+    if (is_type_builtin_name(call.callee())) {
+        return call_type_builtin(call.callee(), args, call.location());
+    }
+
     const auto found = functions_.find(call.callee());
     if (found == functions_.end()) {
         diagnostics_->fatal(DiagnosticId::UnknownFunction, call.location(),
@@ -549,6 +594,21 @@ Value Interpreter::call_input_builtin(const std::string &name,
         return Value(line);
     }
 
+    return Value();
+}
+
+Value Interpreter::call_type_builtin(const std::string &name,
+                                     const std::vector<Value> &args,
+                                     SourceLocation location) {
+    if (args.size() != 1) {
+        diagnostics_->fatal(
+            DiagnosticId::ArityMismatch, location,
+            {DiagnosticArg("name", name),
+             DiagnosticArg("expected", "1"),
+             DiagnosticArg("actual", number_to_string(args.size()))});
+    }
+
+    *output_ << value_type_name(args[0]) << '\n';
     return Value();
 }
 

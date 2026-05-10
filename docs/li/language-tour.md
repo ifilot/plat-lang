@@ -7,12 +7,8 @@ wat hie neet geneump weurt, huurt nog neet bie de vaste taol.
 
 De huidige taol bevat primitieve waerdes, variabelen, lexicale scopes,
 expressies, globale funksies, veurwaerde, lusse, veranderbare
-`portefeuil`-tabellen, gelokaliseerde meldinge, en twee minimale
-standaardbibliotheekfunksies: `aafdrokke` / `aafdrökke` en `invuier`.
-
-Modules, imports, klasses, methodes, exceptions, statische types, closures,
-first-class funksies, en ein groetere standaardbibliotheek zeen nog neet
-onderdeil van de huidige taol.
+`portefeuil`-tabellen, gelokaliseerde meldinge, en ein minimale
+standaardbibliotheek: `aafdrokke` / `aafdrökke`, `invuier`, en `waatis`.
 
 ## Waerdes
 
@@ -26,6 +22,8 @@ De runtime-waerdes zeen:
 | `neetwoar` | boolean neet woar |
 | `niks` | gein waerde |
 | `portefeuil` | veranderbare tabel |
+
+`waatis(value)` drukt deze runtime-typename aaf veur bestaande waerdes.
 
 `plat-lang` haet ein nómmertype. De taol maak gein versjil tösje integers en
 floating-point nómmers.
@@ -59,6 +57,8 @@ Sleutelwäörd, runtime-typenaam, en standaardbibliotheekname zeen besjermd en
 kinne neet opnieuw gedefinieerd waere. `nómmer` is de dialect-correcte
 runtime-typenaam; `nommer` blief geaccepteerd es ASCII-spelling.
 
+Gebroek `waatis()` es te 't type van ein variabele wils bekieke.
+
 ## Expressies
 
 De huidige taol ondersteunt literals, variabelen, haakjes, unaire en binaire
@@ -80,7 +80,8 @@ Belangrieke operators:
 | `==`, `!=` | geliek en neet geliek |
 | `en`, `of` | logische operators |
 
-Deile of remainder door nul is ein fout.
+Deile of remainder door nul is ein fout. Nómmeroperators vereise nómmers,
+behalve `+` es eine kant tekst is.
 
 ## Funksies
 
@@ -188,12 +189,13 @@ iteratie. Boete ein lus zeen die allebei ein fout.
 
 ## Minimale standaardbibliotheek
 
-De standaardbibliotheek haet bewust allein twee funksies.
+De standaardbibliotheek haet bewust allein ein klein aantal funksies.
 
 | Funksie | Gedrag |
 | ------- | ------ |
 | `aafdrokke(value)`, `aafdrökke(value)` | Drukt `value` aaf mit ein newline en geuf `niks` truuk. |
 | `invuier()` | Lees eine regel invoer es `teks`; geuf `niks` bie end-of-input. |
+| `waatis(value)` | Drukt de runtime-typenaam van `value` aaf en geuf `niks` truuk. |
 
 ```platlang
 aafdrökke("Wie heits te?")

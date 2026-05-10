@@ -57,13 +57,14 @@ aafdrokke(fib(10))
   </div>
 </div>
 
-## At A Glance
+## At a glance
 
 The current language contains the core language only: primitive values,
 variables, expressions, global functions, conditionals, loops, mutable `portefeuil`
 tables, and localized diagnostics.
 
-The standard library starts deliberately small with only `aafdrokke(value)` /
-`aafdrökke(value)` for output and `invuier()` for input. Modules, imports, classes, methods,
-exceptions, closures, first-class functions, static types, and the broader
-standard library are intentionally deferred.
+The standard library starts deliberately small with `aafdrokke(value)` /
+`aafdrökke(value)` for output, `invuier()` for input, and `waatis(value)` for
+runtime type inspection. Modules, imports, classes, methods, exceptions,
+closures, first-class functions, static types, and the broader standard library
+are intentionally deferred.

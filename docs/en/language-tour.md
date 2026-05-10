@@ -1,18 +1,14 @@
 # Language Tour
 
 This page describes the behavior supported by the current `plat-lang`
-interpreter. Anything not listed here should be treated as not part of the
-stable language yet.
+interpreter.
 
 ## Language Scope
 
 The current language includes primitive values, variables, lexical scopes,
 expressions, global functions, conditionals, loops, mutable `portefeuil` tables,
-localized diagnostics, and two minimal standard library functions: `aafdrokke`
-/ `aafdrökke` and `invuier`.
-
-It does not include modules, imports, classes, methods, exceptions, static
-types, closures, first-class functions, or a larger standard library.
+localized diagnostics, and a minimal standard library: `aafdrokke` /
+`aafdrökke`, `invuier`, and `waatis`.
 
 ## Values
 
@@ -26,6 +22,8 @@ The runtime value types are:
 | `neetwoar` | boolean false |
 | `niks` | absence of a value |
 | `portefeuil` | mutable table |
+
+`waatis(value)` prints these runtime type names for existing values.
 
 There is one numeric type. The language does not distinguish integers from
 floating-point numbers.
@@ -54,12 +52,12 @@ loat later
 naam = "Mia"
 ```
 
-Assigning to an undeclared variable is an error. Declaring the same name twice
-in the same scope is also an error.
-
-Names such as keywords, runtime type names, and standard library built-ins are
-protected. They cannot be redefined. `nómmer` is the dialect-correct runtime
-type name for numbers; `nommer` remains accepted as the ASCII spelling.
+* Assigning to an undeclared variable is an error. Declaring the same name twice
+  in the same scope is also an error.
+* Names such as keywords, runtime type names, and standard library built-ins are
+  protected. They cannot be redefined. `nómmer` is the dialect-correct runtime
+  type name for numbers; `nommer` remains accepted as the ASCII spelling.
+* To obtain the type of the variable, use `waatis()`.
 
 ## Expressions
 
@@ -99,17 +97,15 @@ enj
 aafdrokke(dubbel(21))
 ```
 
-Before execution starts, all top-level functions are registered. This means a
-function may call another function declared later in the file, and mutual
-recursion works without forward declarations.
-
-Function declarations are only valid at top level. A nested `funksie` is a
-syntax error. Functions are not values: they cannot be stored in
-variables, passed as arguments, returned, or placed in tables.
-
-Calling a function with the wrong number of arguments is an error. Falling off
-the end of a function returns `niks`. `trok` without a value also returns
-`niks`. Using `trok` outside a function is an error.
+* Before execution starts, all top-level functions are registered. This means a
+  function may call another function declared later in the file, and mutual
+  recursion works without forward declarations.
+* Function declarations are only valid at top level. A nested `funksie` is a
+  syntax error. Functions are not values: they cannot be stored in
+  variables, passed as arguments, returned, or placed in tables.
+* Calling a function with the wrong number of arguments is an error. Falling off
+  the end of a function returns `niks`. `trok` without a value also returns
+  `niks`. Using `trok` outside a function is an error.
 
 ## Conditionals
 
@@ -192,14 +188,13 @@ enj
 Loops support `aafbraeke` to exit and `euversjlaon` to continue to the next
 iteration. Using either outside a loop is an error.
 
-## Minimal Standard Library
-
-The standard library intentionally starts with only two functions.
+## Standard library
 
 | Function | Behavior |
 | -------- | -------- |
 | `aafdrokke(value)`, `aafdrökke(value)` | Prints `value` followed by a newline and returns `niks`. |
 | `invuier()` | Reads one line from input and returns it as `teks`; returns `niks` at end of input. |
+| `waatis(value)` | Prints the runtime type name of `value` and returns `niks`. |
 
 ```platlang
 aafdrökke("What is your name?")
@@ -209,10 +204,12 @@ aafdrökke("hoi " + naam)
 
 These names are protected and cannot be shadowed.
 
-When a standard name has a dialect-correct spelling with diacritics, the ASCII
-spelling stays supported as the ergonomic form, and the diacritic spelling is
-accepted as an alias. For example, both `aafdrokke` and `aafdrökke` call the
-same print function.
+!!! note "Diacritics and ASCII spellings"
+
+    When a standard name has a dialect-correct spelling with diacritics, the ASCII
+    spelling stays supported as the ergonomic form, and the diacritic spelling is
+    accepted as an alias. For example, both `aafdrokke` and `aafdrökke` call the
+    same print function.
 
 ## Diagnostics
 

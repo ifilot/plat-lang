@@ -40,6 +40,7 @@ The standard library currently contains only:
 | -------- | ------- |
 | `aafdrokke(value)`, `aafdrökke(value)` | Print one value followed by a newline. |
 | `invuier()` | Read one input line as text, or return `niks` at end of input. |
+| `waatis(value)` | Print the runtime type name of one value. |
 
 Modules, imports, classes, methods, exceptions, closures, first-class
 functions, static types, and the broader standard library are intentionally
@@ -101,6 +102,7 @@ ctest --test-dir build
 ## Documentation
 
 ```sh
+python -m venv ~/.venv
 source ~/.venv/bin/activate
 pip install -r docs/requirements.txt
 mkdocs serve -f docs/mkdocs.yml

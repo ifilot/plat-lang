@@ -1,0 +1,5 @@
+funksie dubbel(getal):
+    trök getal * 2
+enj
+
+aafdrokke(dubbel(21))

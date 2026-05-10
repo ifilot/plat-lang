@@ -125,6 +125,18 @@ private:
                              SourceLocation location);
 
     /**
+     * Calls the `waatis` built-in.
+     *
+     * @param name Name used at the call site.
+     * @param args Evaluated function arguments.
+     * @param location Source location of the call.
+     * @return `niks` after printing the runtime type name.
+     */
+    Value call_type_builtin(const std::string &name,
+                            const std::vector<Value> &args,
+                            SourceLocation location);
+
+    /**
      * Evaluates all call arguments.
      *
      * @param args Argument expression nodes.
