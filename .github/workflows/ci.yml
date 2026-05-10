@@ -140,6 +140,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
@@ -152,5 +155,6 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             dist/platlang-linux-x86_64/platlang-linux-x86_64 \
             dist/platlang-windows-x86_64/platlang-windows-x86_64.exe \
+            --repo "${GITHUB_REPOSITORY}" \
             --title "plat-lang ${GITHUB_REF_NAME}" \
             --notes "Release ${GITHUB_REF_NAME}"
