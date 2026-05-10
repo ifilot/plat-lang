@@ -1,12 +1,22 @@
 #include "interpreter.h"
 
 #include <cmath>
+#include <istream>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 namespace plat {
 namespace {
+
+inline constexpr std::string_view kPrintBuiltinAscii = "aafdrokke";
+inline constexpr std::string_view kPrintBuiltinComposed = "aafdrökke";
+inline constexpr std::string_view kPrintBuiltinDecomposed = "aafdro\xCC\x88kke";
+inline constexpr std::string_view kInputBuiltin = "invuier";
+inline constexpr std::string_view kNumberTypeAscii = "nommer";
+inline constexpr std::string_view kNumberTypeComposed = "nómmer";
+inline constexpr std::string_view kNumberTypeDecomposed = "no\xCC\x81mmer";
 
 /**
  * Internal signal used to implement `trok`.
@@ -37,7 +47,7 @@ public:
 class BreakSignal {};
 
 /**
- * Internal signal used to implement `weier`.
+ * Internal signal used to implement `euversjlaon`.
  */
 class ContinueSignal {};
 
@@ -49,9 +59,35 @@ class ContinueSignal {};
 std::shared_ptr<const std::unordered_set<std::string>> make_protected_names() {
     return std::make_shared<const std::unordered_set<std::string>>(
         std::unordered_set<std::string>{
-            "aafbraeke", "aafdrokke", "angesj", "enj", "es", "funksie",
-            "loat", "mepke", "neetwoar", "niks", "nommer", "teks",
-            "trok", "veur", "weier", "woar", "zolang"});
+            "aafbraeke", std::string(kPrintBuiltinAscii),
+            std::string(kPrintBuiltinComposed),
+            std::string(kPrintBuiltinDecomposed), "angesj", "enj", "es",
+            "funksie", std::string(kInputBuiltin), "loat", "portefeuil",
+            "neetwoar", "niks", std::string(kNumberTypeAscii),
+            std::string(kNumberTypeComposed),
+            std::string(kNumberTypeDecomposed), "teks", "trok", "veur",
+            "euversjlaon", "woar", "zolang"});
+}
+
+/**
+ * Returns whether a name refers to the print built-in.
+ *
+ * @param name Candidate function name.
+ * @return True when the name is a supported alias.
+ */
+bool is_print_builtin_name(std::string_view name) {
+    return name == kPrintBuiltinAscii || name == kPrintBuiltinComposed ||
+           name == kPrintBuiltinDecomposed;
+}
+
+/**
+ * Returns whether a name refers to the input built-in.
+ *
+ * @param name Candidate function name.
+ * @return True when the name is a supported alias.
+ */
+bool is_input_builtin_name(std::string_view name) {
+    return name == kInputBuiltin;
 }
 
 /**
@@ -68,8 +104,10 @@ std::string number_to_string(std::size_t value) {
 
 } // namespace
 
-Interpreter::Interpreter(DiagnosticReporter &diagnostics, std::ostream &output)
+Interpreter::Interpreter(DiagnosticReporter &diagnostics, std::istream &input,
+                         std::ostream &output)
     : diagnostics_(&diagnostics),
+      input_(&input),
       output_(&output),
       protected_names_(make_protected_names()) {
     global_environment_ =
@@ -79,10 +117,10 @@ Interpreter::Interpreter(DiagnosticReporter &diagnostics, std::ostream &output)
 
 void Interpreter::execute_program(const Program &program) {
     try {
+        register_top_level_functions(program);
+
         for (const StmtPtr &stmt : program.statements()) {
-            if (const auto *function = dynamic_cast<const FunctionDecl *>(stmt.get())) {
-                register_function(*function);
-            } else {
+            if (dynamic_cast<const FunctionDecl *>(stmt.get()) == nullptr) {
                 execute_stmt(*stmt);
             }
         }
@@ -94,6 +132,14 @@ void Interpreter::execute_program(const Program &program) {
     } catch (const ContinueSignal &) {
         diagnostics_->fatal(DiagnosticId::ContinueOutsideLoop,
                             program.location());
+    }
+}
+
+void Interpreter::register_top_level_functions(const Program &program) {
+    for (const StmtPtr &stmt : program.statements()) {
+        if (const auto *function = dynamic_cast<const FunctionDecl *>(stmt.get())) {
+            register_function(*function);
+        }
     }
 }
 
@@ -273,12 +319,12 @@ Value Interpreter::evaluate_expr(const Expr &expr) {
     }
 
     if (const auto *node = dynamic_cast<const BinaryExpr *>(&expr)) {
-        if (node->op() == "and") {
+        if (node->op() == "en") {
             return Value(evaluate_expr(node->left()).is_truthy() &&
                          evaluate_expr(node->right()).is_truthy());
         }
 
-        if (node->op() == "or") {
+        if (node->op() == "of") {
             return Value(evaluate_expr(node->left()).is_truthy() ||
                          evaluate_expr(node->right()).is_truthy());
         }
@@ -420,8 +466,12 @@ void Interpreter::register_function(const FunctionDecl &function) {
 Value Interpreter::call_function(const CallExpr &call) {
     std::vector<Value> args = evaluate_arguments(call.args());
 
-    if (call.callee() == "aafdrokke") {
-        return call_print_builtin(args, call.location());
+    if (is_print_builtin_name(call.callee())) {
+        return call_print_builtin(call.callee(), args, call.location());
+    }
+
+    if (is_input_builtin_name(call.callee())) {
+        return call_input_builtin(call.callee(), args, call.location());
     }
 
     const auto found = functions_.find(call.callee());
@@ -465,17 +515,40 @@ Value Interpreter::call_function(const CallExpr &call) {
     return Value();
 }
 
-Value Interpreter::call_print_builtin(const std::vector<Value> &args,
+Value Interpreter::call_print_builtin(const std::string &name,
+                                      const std::vector<Value> &args,
                                       SourceLocation location) {
     if (args.size() != 1) {
         diagnostics_->fatal(
             DiagnosticId::ArityMismatch, location,
-            {DiagnosticArg("name", "aafdrokke"),
+            {DiagnosticArg("name", name),
              DiagnosticArg("expected", "1"),
              DiagnosticArg("actual", number_to_string(args.size()))});
     }
 
     *output_ << args[0].to_string() << '\n';
+    return Value();
+}
+
+Value Interpreter::call_input_builtin(const std::string &name,
+                                      const std::vector<Value> &args,
+                                      SourceLocation location) {
+    if (!args.empty()) {
+        diagnostics_->fatal(
+            DiagnosticId::ArityMismatch, location,
+            {DiagnosticArg("name", name),
+             DiagnosticArg("expected", "0"),
+             DiagnosticArg("actual", number_to_string(args.size()))});
+    }
+
+    std::string line;
+    if (std::getline(*input_, line)) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
+        return Value(line);
+    }
+
     return Value();
 }
 

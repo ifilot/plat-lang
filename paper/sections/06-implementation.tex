@@ -1,0 +1,44 @@
+\section{Implementation}
+
+The current implementation is a C++20 interpreter built with CMake. The build
+requires Flex and Bison. Bison generates the parser from
+\code{src/platlang\_parser.y}, and Flex generates the lexer from
+\code{src/platlang\_lexer.l}. The executable is named \code{platlang}.
+
+At a high level, the interpreter follows a conventional pipeline. The lexer
+recognizes keywords, identifiers, numbers, strings, comments, and punctuation.
+The parser builds an abstract syntax tree with source locations. The
+interpreter executes the AST using runtime value objects, table storage,
+environments, function declarations, and localized diagnostic reporting.
+Syntax errors stop execution before program evaluation. Runtime and semantic
+errors are reported during interpretation.
+
+Several implementation details support the design goals discussed above:
+
+\begin{itemize}
+  \item Top-level function declarations are registered before statements
+        execute, allowing functions to call declarations that appear later in
+        the file and allowing mutually recursive global functions.
+  \item Variables are dynamically typed and stored in lexical environments.
+        Assignment searches existing scopes, while \code{loat} creates a new
+        binding in the current scope.
+  \item Tables are mutable and use string or numeric keys. Dot access is a
+        convenience for string-keyed fields.
+  \item Diagnostics are represented by stable identifiers and rendered through
+        localized templates for English and Limburgian.
+  \item The command-line interface supports \code{--version}, \code{--ast},
+        and diagnostic language selection through \code{--lang}.
+\end{itemize}
+
+The implementation is intentionally modest. It is valuable here because it is
+inspectable and concrete, not because it introduces a new implementation
+technique. That concreteness distinguishes \plat{} from a purely speculative
+argument about localization: the design choices are embodied in a runnable
+artifact with examples, tests, documentation, and diagnostics.
+
+% TODO: Add an architecture figure in figures/ showing lexer, parser, AST,
+% interpreter, environment, values, and diagnostics.
+% TODO: Add a parser overview table after the grammar stabilizes.
+% TODO: Summarize the runtime representation with references to source files.
+% TODO: Add testing details, including unit tests and golden end-to-end tests,
+% once the release branch is stable.

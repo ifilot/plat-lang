@@ -10,6 +10,10 @@ exclude_docs: |
   mkdocs.yml
   requirements.txt
   check_links.py
+  hooks/*.py
+
+hooks:
+  - hooks/platlang_lexer.py
 
 theme:
   name: material
@@ -53,7 +57,7 @@ plugins:
             language: en
           nav:
             - Heem: index.md
-            - Aan de geng: getting-started.md
+            - Oan de geng: getting-started.md
             - Taolrónj: language-tour.md
             - Veurbeelde: examples.md
 

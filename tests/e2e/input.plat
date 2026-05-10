@@ -1,0 +1,3 @@
+loat name = invuier()
+aafdrokke("hoi " + name)
+aafdrokke(invuier())

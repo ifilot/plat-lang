@@ -1,0 +1,5 @@
+funksie add(a, b):
+    trok a + b
+enj
+
+aafdrokke(add(1))

@@ -1,0 +1,59 @@
+\section{Language Overview}
+
+\plat{} programs use the \code{.plat} extension and are executed by the
+\code{platlang} interpreter. The current repository version is \code{0.1.0}.
+The language is dynamically typed and currently includes numbers, strings,
+booleans, \code{niks}, and mutable \code{portefeuil} tables. Runtime type names in
+the design notes include \code{nommer}, \code{teks}, \code{woar}, \code{niks},
+and \code{portefeuil}. Functions are global declarations rather than first-class
+runtime values.
+
+The basic syntax is statement-oriented. Variables are declared with
+\code{loat}. Functions are declared with \code{funksie} and return with
+\code{trok}. Conditional statements use \code{es}, optional \code{angesj}, and
+\code{enj}. The language includes \code{zolang} loops and half-open numeric
+\code{veur} loops. Loop control uses \code{aafbraeke} and \code{euversjlaon}.
+
+\begin{lstlisting}[caption={A recursive Fibonacci example from the repository.},label={lst:fib}]
+# Recursive function example.
+
+funksie fib(n):
+    es n < 2:
+        trok n
+    angesj:
+        trok fib(n - 1) + fib(n - 2)
+    enj
+enj
+
+aafdrokke(fib(10))
+\end{lstlisting}
+
+Tables are the only composite data structure in the current language design.
+They can be used as arrays, maps, records, objects, or namespaces. Array-style
+use is zero-based, field access supports both dot and index notation, and keys
+must evaluate to strings or numbers.
+
+\begin{lstlisting}[caption={A table example based on the Limburgian-commented examples.},label={lst:tables}]
+loat gebroeker = {
+    naam = "Alice",
+    leefteid = 30,
+}
+
+loat nommers = { 10, 20, 30, }
+loat veld = "naam"
+
+aafdrokke(gebroeker.naam)
+aafdrokke(gebroeker[veld])
+aafdrokke(nommers[0])
+\end{lstlisting}
+
+The language deliberately omits many features common in larger systems:
+classes, inheritance, static typing, generics, macros, exceptions, operator
+overloading, first-class functions, closures, nested functions, and module
+systems. These omissions should not be read as claims about what programming
+languages ought to exclude in general. They are local choices that keep the
+case study small enough for the cultural design layer to remain legible.
+
+% TODO: Verify the feature list against a tagged release before publication.
+% TODO: Add a compact grammar table or reference appendix once the syntax is
+% stable.

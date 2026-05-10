@@ -41,7 +41,7 @@ plat::DiagnosticReporter *platlang_diagnostics = nullptr;
 %token <number> NUMBER
 %token <text> STRING
 %token <text> IDENTIFIER
-%token LOAT FUNKSIE ES ANGESJ ZOLANG VEUR ENJ TROK AAFBRAEKE WEIER
+%token LOAT FUNKSIE ES ANGESJ ZOLANG VEUR ENJ TROK AAFBRAEKE EUVERSJLAON
 %token NIKS WOAR NEETWOAR
 %token EQ NEQ LE GE AND OR
 
@@ -137,6 +137,15 @@ stmt:
 | if_stmt { $$ = $1; }
 | while_stmt { $$ = $1; }
 | for_stmt { $$ = $1; }
+| FUNKSIE {
+    $$ = nullptr;
+    if (platlang_diagnostics != nullptr) {
+      platlang_diagnostics->error(
+          plat::DiagnosticId::FunctionDeclarationInBlock,
+          LOC(@1));
+    }
+    YYERROR;
+  }
 ;
 
 var_decl:
@@ -174,7 +183,7 @@ break_stmt:
 ;
 
 continue_stmt:
-  WEIER { $$ = new plat::ContinueStmt(LOC(@1)); }
+  EUVERSJLAON { $$ = new plat::ContinueStmt(LOC(@1)); }
 ;
 
 if_stmt:
@@ -212,14 +221,14 @@ maybe_else:
 logical_or:
   logical_and { $$ = $1; }
 | logical_or OR logical_and {
-    $$ = new plat::BinaryExpr(LOC(@2), plat::ExprPtr($1), "or", plat::ExprPtr($3));
+    $$ = new plat::BinaryExpr(LOC(@2), plat::ExprPtr($1), "of", plat::ExprPtr($3));
   }
 ;
 
 logical_and:
   equality { $$ = $1; }
 | logical_and AND equality {
-    $$ = new plat::BinaryExpr(LOC(@2), plat::ExprPtr($1), "and", plat::ExprPtr($3));
+    $$ = new plat::BinaryExpr(LOC(@2), plat::ExprPtr($1), "en", plat::ExprPtr($3));
   }
 ;
 

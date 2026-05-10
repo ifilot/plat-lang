@@ -1,4 +1,4 @@
-%option noyywrap yylineno noinput nounput
+%option noyywrap yylineno noinput nounput 8bit
 %{
 #include "platlang_parser.h"
 
@@ -47,9 +47,11 @@ static std::string unescape_string(const char *text, int length) {
 %}
 
 %%
-[ \t\r]+                  {}
+[ \t]+                    {}
+\r\n                      { yycolumn = 1; }
 \n                        { yycolumn = 1; }
-"#".*                     {}
+\r                        { ++yylineno; yycolumn = 1; }
+"#"[^\r\n]*               {}
 
 "loat"                    { return LOAT; }
 "funksie"                 { return FUNKSIE; }
@@ -60,12 +62,12 @@ static std::string unescape_string(const char *text, int length) {
 "enj"                     { return ENJ; }
 "trok"                    { return TROK; }
 "aafbraeke"               { return AAFBRAEKE; }
-"weier"                   { return WEIER; }
+"euversjlaon"             { return EUVERSJLAON; }
 "niks"                    { return NIKS; }
 "woar"                    { return WOAR; }
 "neetwoar"                { return NEETWOAR; }
-"and"                     { return AND; }
-"or"                      { return OR; }
+"en"                      { return AND; }
+"of"                      { return OR; }
 
 "=="                      { return EQ; }
 "!="                      { return NEQ; }
@@ -73,11 +75,14 @@ static std::string unescape_string(const char *text, int length) {
 ">="                      { return GE; }
 
 [0-9]+(\.[0-9]+)?         { yylval.number = std::strtod(yytext, nullptr); return NUMBER; }
-\"([^\\\"\n]|\\[nt\"\\])*\" {
+\"([^\\\"\r\n]|\\[nt\"\\])*\" {
                             yylval.text = new std::string(unescape_string(yytext, yyleng));
                             return STRING;
                           }
-[A-Za-z_][A-Za-z0-9_]*    { yylval.text = new std::string(yytext); return IDENTIFIER; }
+[A-Za-z_\200-\377][A-Za-z0-9_\200-\377]* {
+                            yylval.text = new std::string(yytext);
+                            return IDENTIFIER;
+                          }
 
 "+"                       { return '+'; }
 "-"                       { return '-'; }

@@ -1,0 +1,3 @@
+loat x = 1
+loat y = 2
+aafdrokke(x + y)

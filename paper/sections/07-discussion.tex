@@ -1,0 +1,51 @@
+\section{Discussion}
+
+\plat{} suggests that culturally localized programming-language design is not
+only a question of translating keywords. It requires decisions about who the
+language is for, which linguistic variety is represented, how diagnostics and
+documentation should sound, what compromises are acceptable for typing and
+tooling, and how the project will avoid speaking for a community without
+feedback from that community.
+
+The project also shows why conventional semantics can be useful in this kind
+of design study. If \plat{} also introduced an unusual type system, radical
+control model, or experimental runtime, it would be harder to tell which design
+effects came from the linguistic layer. By keeping the programming model
+familiar, the artifact isolates regional-language identity as the main design
+variable.
+
+\begin{table}[t]
+\centering
+\caption{Design questions for culturally localized programming languages.}
+\label{tab:checklist}
+\begin{tabular}{p{0.32\linewidth}p{0.58\linewidth}}
+\toprule
+\textbf{Question} & \textbf{Why it matters} \\
+\midrule
+Who is the intended speech community? &
+Clarifies whether the language is designed for fluent speakers, learners,
+teachers, artists, researchers, or a broader public. \\
+Which dialect or orthography is chosen, and why? &
+Makes visible the linguistic authority and compromise behind keyword,
+diagnostic, and documentation choices. \\
+Which parts of the system are localized? &
+Distinguishes surface syntax from diagnostics, documentation, examples,
+tooling, libraries, editor support, and community materials. \\
+How are authenticity and typability balanced? &
+Identifies tradeoffs involving diacritics, ASCII compatibility, keyboard
+layouts, searchability, and source portability. \\
+Is the goal education, cultural visibility, practical use, art, or research? &
+Prevents the project from being evaluated against the wrong success criteria. \\
+How can community feedback be incorporated? &
+Creates a path for revision, accountability, and speaker participation. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This checklist is intended to be reusable beyond \plat. It can guide the
+design of other regional-language or minority-language programming systems,
+especially those that want to be taken seriously without claiming technical
+novelty in traditional programming-language theory.
+
+% TODO: Validate this checklist by applying it to additional localized
+% programming-language projects.

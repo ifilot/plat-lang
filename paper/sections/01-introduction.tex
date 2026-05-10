@@ -1,0 +1,45 @@
+\section{Introduction}
+
+Programming languages are not culturally neutral objects. Their grammars,
+libraries, diagnostics, examples, documentation, and naming conventions all
+encode assumptions about who is expected to read, write, and teach programs.
+In contemporary programming practice, those assumptions are usually organized
+around English. Even when an implementation offers translated documentation or
+localized error messages, the language surface itself often remains built from
+English words such as \code{if}, \code{while}, \code{return}, and \code{print}.
+
+\plat{} explores a different design position. It is a small interpreted
+language where the computational core is deliberately ordinary, but the visible
+surface of the language is organized around Limburgian identity. Variables are
+introduced with \code{loat}; functions with \code{funksie}; conditionals with
+\code{es} and \code{angesj}; loops with \code{zolang} and \code{veur}; returns
+with \code{trok}; and the tiny standard library includes \code{aafdrokke} for
+printing and \code{invuier} for reading one line of input. The project also
+contains English and Limburgian documentation paths and supports localized
+diagnostics through command-line language tags such as \code{--lang li}.
+
+The central claim of this paper is modest. \plat{} is not presented as a new
+type system, runtime model, optimization strategy, or semantic foundation.
+Instead, it is treated as an exploratory artifact: a concrete design case study
+in what happens when regional-language identity is made a first-class
+constraint in the design of a programming language. The conventionality of the
+interpreter-language mechanisms is part of the method. By keeping the language
+small and familiar, the project makes the cultural and linguistic layer more
+visible as an object of study.
+
+This draft makes four contributions:
+
+\begin{enumerate}
+  \item a concrete design case study of a Limburgian-themed programming
+        language;
+  \item a discussion of tradeoffs in regional-language keyword and diagnostic
+        design;
+  \item an analysis of authenticity versus usability, especially ASCII
+        compatibility; and
+  \item a reusable set of design questions for culturally localized programming
+        languages.
+\end{enumerate}
+
+% TODO: Add a stable repository URL, release tag, archive DOI, and commit hash.
+% TODO: Add a short methodology paragraph explaining how repository artifacts,
+% documentation, examples, and implementation files were analyzed.

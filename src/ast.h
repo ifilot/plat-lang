@@ -641,14 +641,14 @@ public:
 };
 
 /**
- * Represents a `weier` loop-continue statement.
+ * Represents a `euversjlaon` loop-continue statement.
  */
 class ContinueStmt final : public Stmt {
 public:
     /**
      * Creates a continue statement.
      *
-     * @param location Source location of the `weier` keyword.
+     * @param location Source location of the `euversjlaon` keyword.
      */
     explicit ContinueStmt(SourceLocation location) : Stmt(location) {}
 };

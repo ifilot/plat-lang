@@ -1,0 +1,11 @@
+# Ask for a name, then read one line from standard input.
+# `invuier` returns the line without its newline.
+
+aafdrökke("What is your name?")
+loat naam = invuier()
+
+es naam:
+    aafdrökke("Hello, " + naam)
+angesj:
+    aafdrokke("Hello, stranger")
+enj

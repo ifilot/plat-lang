@@ -1,5 +1,9 @@
 # Getting Started
 
+These commands build and run the current interpreter. The language documented
+here is the core language plus the minimal standard library functions
+`aafdrokke` / `aafdrökke` and `invuier`.
+
 ## Install Dependencies
 
 On Debian or Ubuntu:
@@ -22,6 +26,14 @@ cmake --build build
 build/platlang examples/en/fibonacci.plat
 ```
 
+Read one line from standard input:
+
+```platlang
+aafdrökke("What is your name?")
+loat name = invuier()
+aafdrökke("hoi " + name)
+```
+
 ## Print the AST
 
 ```sh
@@ -38,4 +50,16 @@ build/platlang --lang li examples/li/fibonacci.plat
 
 ```sh
 ctest --test-dir build
+```
+
+## Documentation
+
+Published documentation tracks the current executable. Older executables remain
+available through Git tags/releases, but the website documents the current
+language.
+
+Build the current working tree with:
+
+```sh
+mkdocs build -f docs/mkdocs.yml --strict
 ```

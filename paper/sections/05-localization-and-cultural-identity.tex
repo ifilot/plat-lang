@@ -1,0 +1,87 @@
+\section{Localization and Cultural Identity}
+
+The conceptual core of \plat{} is the decision to localize not only
+documentation or diagnostics, but the programming surface itself. The language
+does this through keyword choice, built-in names, runtime type names,
+localized diagnostics, examples, and documentation structure.
+
+\subsection{Keywords and Names}
+
+The core vocabulary includes declaration words such as \code{loat} and
+\code{funksie}; control-flow words such as \code{es}, \code{angesj},
+\code{zolang}, \code{veur}, \code{enj}, \code{trok}, \code{aafbraeke}, and
+\code{euversjlaon}; and literal words such as \code{niks}, \code{woar}, and
+\code{neetwoar}. The minimal standard library currently exposes
+\code{aafdrokke} for printing and \code{invuier} for input. The protected-name
+set also includes runtime type names such as \code{nommer}, \code{teks}, and
+\code{portefeuil}. These choices make Limburgian visible at the level where many
+languages default to English.
+
+The naming layer is not merely decorative. It changes what is repeated in
+tutorials, error messages, tests, and examples. A learner writing
+\code{funksie fib(n):} and \code{trok n} encounters programming concepts
+through a regional-language vocabulary. This does not remove the need to learn
+general programming ideas, but it changes the cultural frame through which
+those ideas are introduced.
+
+\subsection{Diagnostics and Documentation}
+
+The implementation includes localized diagnostic templates for English and
+Limburgian. The command-line option \code{--lang li} selects Limburgian
+diagnostics, while \code{--lang en} selects English. The implementation also
+accepts more specific Limburgian tags such as \code{li-sit} and
+\code{li-x-sittard}. Diagnostics use stable identifiers and localized message
+templates; for example, unknown variables, invalid table keys, wrong arity,
+breaks outside loops, and returns outside functions are rendered through the
+selected diagnostic language.
+
+The documentation tree mirrors this concern by providing both English and
+Limburgian paths. The example tree is similarly split between English-commented
+and Limburgian-commented examples. This matters because localization is rarely
+only a lexical substitution problem. A language also needs examples, tutorial
+phrasing, diagnostic tone, and documentation conventions that make the chosen
+identity feel coherent.
+
+\subsection{Dialect Selection}
+
+The design notes state that \plat{} prefers the Sittard dialect as its
+foundation where possible. That choice gives the project a concrete linguistic
+anchor, but it also raises questions. Limburgian is not a single homogeneous
+surface. Different speakers may prefer different spellings, dialect forms, or
+degrees of standardization. A programming language that adopts one variety
+therefore needs to explain whether it is designing for a local community, a
+broader regional identity, a pedagogical compromise, or an artifact authored
+from one particular linguistic position.
+
+% TODO: Add evidence from Limburgian speakers, teachers, learners, or language
+% organizations on whether the selected terms feel natural, legible, and
+% respectful.
+
+\subsection{Authenticity and ASCII Compatibility}
+
+The repository explicitly discusses the tension between authentic written
+Limburgian and practical typing. Standard Limburgish spelling often uses
+accents and diacritics, but those characters can be awkward on common keyboard
+layouts and toolchains. \plat{} therefore keeps official keywords and standard
+built-in names within plain ASCII while allowing extended characters in source
+files where naturally useful, especially strings and comments.
+
+This is a pragmatic compromise. ASCII-only keywords lower friction for typing,
+version control, shells, tutorials, and cross-platform examples. At the same
+time, ASCII can flatten orthographic distinctions that matter to speakers.
+The design question is not whether authenticity or usability should always
+win, but how a language should document and revisit the compromise.
+
+\subsection{Beyond Novelty}
+
+Localized syntax can be dismissed as a gimmick if it is treated as a mere
+translation of English keywords. \plat{} avoids that reduction when its
+linguistic choices are tied to a broader design program: localized diagnostics,
+Limburgian examples, dialect reflection, and explicit discussion of typability
+and preservation. The language remains playful, but its playfulness is attached
+to a serious question: how can programming systems give regional languages a
+visible digital role without pretending that keyword translation alone solves
+accessibility, education, or preservation?
+
+% TODO: Add a user study or qualitative feedback section before making strong
+% claims about accessibility, identity, or cultural impact.

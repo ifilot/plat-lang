@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
     } else {
         try {
             if (platlang_program != nullptr) {
-                plat::Interpreter interpreter(reporter, std::cout);
+                plat::Interpreter interpreter(reporter, std::cin, std::cout);
                 interpreter.execute_program(*platlang_program);
             }
         } catch (const plat::PlatlangError &) {

@@ -52,17 +52,44 @@ The language is built from a small set of concepts:
 More advanced behavior should emerge from combining these concepts rather than
 from adding many specialized language features.
 
+## Current Language Contract
+
+This section describes the current executable core of the language, not the
+broader future design.
+
+The behavior considered part of the current language is:
+
+* primitive values: `nómmer` / `nommer`, `teks`, `woar`, `neetwoar`, `niks`, and `portefeuil`
+* variable declarations with `loat`
+* lexical block scopes
+* expressions and the documented operator set
+* top-level global functions with pre-registration before execution
+* statement conditionals with `es` and optional `angesj`
+* `zolang` and half-open numeric `veur` loops
+* `aafbraeke`, `euversjlaon`, and `trok` in their valid contexts
+* mutable tables with numeric and text keys
+* localized English and Limburgish diagnostics
+* command-line execution, `--version`, `--ast`, and `--lang`
+* the minimal standard library functions `aafdrokke(value)` / `aafdrökke(value)` and `invuier()`
+
+Anything outside that list should be read as future design direction unless a
+later release explicitly adopts it.
+
+The current language deliberately excludes modules, imports, classes, methods, inheritance,
+exceptions, static typing, generics, macros, operator overloading, first-class
+functions, closures, nested functions, and a larger standard library.
+
 ## Primitive Types
 
 `plat-lang` has a small set of primitive runtime types:
 
 | English  | plat-lang runtime name |
 | -------- | ---------------------- |
-| number   | `nommer`               |
+| number   | `nómmer` / `nommer`    |
 | string   | `teks`                 |
 | boolean  | `woar`                 |
 | nil      | `niks`                 |
-| table    | `mepke`                |
+| table    | `portefeuil`                |
 
 These localized names are intended for runtime reflection and type inspection.
 Functions are global declarations rather than ordinary runtime values, so there
@@ -109,7 +136,7 @@ Division always produces a floating-point result.
 
 ## Tables
 
-`plat-lang` has one universal composite type: `mepke`.
+`plat-lang` has one universal composite type: `portefeuil`.
 
 Tables can act as:
 
@@ -252,10 +279,10 @@ functions are not part of the initial language design. Function declarations are
 handled by the interpreter, not by the parser. The parser recognizes function
 declaration syntax but does not register functions.
 
-Top-level function calls can only call functions that have already been declared
-earlier during execution. Inside function bodies, calls may refer to functions
-declared later in the file, because the body is evaluated only after top-level
-declaration execution has continued. Calling an unknown function is a runtime
+Before execution starts, the interpreter pre-registers every top-level function
+declaration in the file. This means top-level code and function bodies may call
+functions declared later in the file, and mutually recursive global functions
+work without forward declarations. Calling an unknown function is a runtime
 error.
 
 ```platlang
@@ -327,7 +354,7 @@ A numeric loop form may also be supported:
 ```platlang
 veur i = 0, 10:
   es i == 3:
-    weier
+    euversjlaon
   enj
 
   aafdrokke(i)
@@ -337,7 +364,7 @@ enj
 Numeric loop variables are numbers and are local to the loop body. The loop
 variable does not exist after the loop ends. Numeric loops are half-open:
 `veur i = 0, 10:` runs with `i` values from `0` through `9`.
-Loops support `aafbraeke` to exit the loop and `weier` to continue to the next
+Loops support `aafbraeke` to exit the loop and `euversjlaon` to continue to the next
 iteration. Using either word outside a loop is an error.
 
 ## Objects Through Tables
@@ -373,7 +400,7 @@ Limburgian identity.
 | end     | `enj`     |
 | return  | `trok`    |
 | break   | `aafbraeke` |
-| continue | `weier`  |
+| continue | `euversjlaon`  |
 | nil     | `niks`    |
 | true    | `woar`    |
 | false   | `neetwoar` |
@@ -381,7 +408,8 @@ Limburgian identity.
 Keywords are reserved and cannot be used as variable names.
 
 The function definition keyword and runtime type name are both `funksie`.
-`aafdrokke` is the standard print built-in, not a keyword.
+`aafdrokke`, `aafdrökke`, and `invuier` are standard library built-ins, not
+keywords.
 
 ## Limburgian Spelling and ASCII Identifiers
 
@@ -392,10 +420,19 @@ umlauts in computing environments.
 
 `plat-lang` source files should support extended character input, including
 accented letters and umlauts, especially inside strings and comments. However,
-official language keywords and standard built-in function names must stay within
-plain ASCII. This keeps programs easy to type on common keyboards while still
-allowing users to write Limburgian text where the source format naturally
-permits it.
+official language keywords must stay within plain ASCII. This keeps programs
+easy to type on common keyboards while still allowing users to write Limburgian
+text where the source format naturally permits it.
+
+Standard built-in function names may provide dialect-correct aliases with
+diacritics. In those cases, the ASCII spelling remains the ergonomic canonical
+form, and the diacritic spelling is accepted as an alias. For example,
+`aafdrokke` and `aafdrökke` both call the same print built-in. Both spellings
+are protected names.
+
+The same rule applies to runtime type names when needed. `nómmer` is the
+dialect-correct spelling for the numeric runtime type, while `nommer` remains
+the ASCII spelling. Both names are protected.
 
 Example:
 
@@ -503,7 +540,15 @@ may be used as a private-use BCP 47 tag. Source syntax is unaffected by the
 diagnostic language; all keywords remain Limburgian.
 
 `plat-lang` source files use the `.plat` extension.
-The first interpreter version is `0.1.0`.
+
+The current standard library is intentionally tiny. It contains only:
+
+| Function | Purpose |
+| -------- | ------- |
+| `aafdrokke(value)`, `aafdrökke(value)` | Prints a value followed by a newline. |
+| `invuier()` | Reads one input line as `teks`, or returns `niks` at end of input. |
+
+All other library helpers are deferred until after the core language is stable.
 
 Most language behavior should be expressible in terms of values flowing through
 expressions inside lexical environments, with tables and global function
@@ -511,8 +556,8 @@ declarations providing the main tools for abstraction.
 
 Programs execute top-level statements directly, making `plat-lang` suitable for
 scripts. A special `main` function is not required. Top-level statements may
-appear before or after function declarations. Function declarations register
-global functions when interpreted.
+appear before or after function declarations. Top-level function declarations
+are registered before any statements execute.
 
 Every `:` introduces a block scope. This includes `es`, `angesj:`, `zolang`,
 `veur`, and `funksie` bodies. Function declarations are only valid at top level,

@@ -1,0 +1,11 @@
+# Vraog nao eine naam, en lees daonao eine regel van standaardinvoer.
+# `invuier` geuf de regel truuk zonder newline.
+
+aafdrökke("Wie heits te?")
+loat naam = invuier()
+
+es naam:
+    aafdrökke("Hallo, " + naam)
+angesj:
+    aafdrokke("Hallo, vremde")
+enj

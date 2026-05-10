@@ -28,6 +28,23 @@ enj
 aafdrokke(fib(10))
 ```
 
+## Language Boundary
+
+The current language includes primitive values, variables, expressions,
+top-level global functions, conditionals, loops, mutable `portefeuil` tables,
+localized diagnostics, and a tiny standard library.
+
+The standard library currently contains only:
+
+| Function | Purpose |
+| -------- | ------- |
+| `aafdrokke(value)`, `aafdrökke(value)` | Print one value followed by a newline. |
+| `invuier()` | Read one input line as text, or return `niks` at end of input. |
+
+Modules, imports, classes, methods, exceptions, closures, first-class
+functions, static types, and the broader standard library are intentionally
+outside the current language.
+
 More scripts live in `examples/en` and `examples/li`. The `li` examples use
 Limburgish comments.
 
@@ -94,6 +111,10 @@ Build static docs:
 ```sh
 mkdocs build -f docs/mkdocs.yml --strict
 ```
+
+Published documentation tracks the current executable. Older executables remain
+available through Git tags/releases, but the website documents the current
+language.
 
 ## Project Notes
 

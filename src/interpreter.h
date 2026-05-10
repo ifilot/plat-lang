@@ -6,6 +6,7 @@
 #include "value.h"
 
 #include <memory>
+#include <istream>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -20,6 +21,7 @@ namespace plat {
 class Interpreter {
 private:
     DiagnosticReporter *diagnostics_;
+    std::istream *input_;
     std::ostream *output_;
     std::shared_ptr<const std::unordered_set<std::string>> protected_names_;
     std::shared_ptr<Environment> global_environment_;
@@ -33,9 +35,11 @@ public:
      * Creates an interpreter.
      *
      * @param diagnostics Diagnostic reporter for runtime errors.
+     * @param input Input stream for built-in functions.
      * @param output Output stream for built-in functions.
      */
-    Interpreter(DiagnosticReporter &diagnostics, std::ostream &output);
+    Interpreter(DiagnosticReporter &diagnostics, std::istream &input,
+                std::ostream &output);
 
     /**
      * Executes a complete program.
@@ -45,6 +49,13 @@ public:
     void execute_program(const Program &program);
 
 private:
+    /**
+     * Registers all top-level function declarations before execution.
+     *
+     * @param program Program AST to scan.
+     */
+    void register_top_level_functions(const Program &program);
+
     /**
      * Executes a statement.
      *
@@ -92,11 +103,25 @@ private:
     /**
      * Calls the `aafdrokke` built-in.
      *
+     * @param name Name used at the call site.
      * @param args Evaluated function arguments.
      * @param location Source location of the call.
      * @return Built-in return value.
      */
-    Value call_print_builtin(const std::vector<Value> &args,
+    Value call_print_builtin(const std::string &name,
+                             const std::vector<Value> &args,
+                             SourceLocation location);
+
+    /**
+     * Calls the `invuier` built-in.
+     *
+     * @param name Name used at the call site.
+     * @param args Evaluated function arguments.
+     * @param location Source location of the call.
+     * @return Read line, or `niks` at end of input.
+     */
+    Value call_input_builtin(const std::string &name,
+                             const std::vector<Value> &args,
                              SourceLocation location);
 
     /**

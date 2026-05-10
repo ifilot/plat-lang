@@ -1,0 +1,80 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{listings}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\definecolor{platkeyword}{RGB}{23, 73, 124}
+\definecolor{platcomment}{RGB}{85, 100, 85}
+\definecolor{platstring}{RGB}{130, 62, 38}
+\definecolor{platgray}{RGB}{245, 245, 245}
+
+\lstdefinelanguage{platlang}{
+  morekeywords={
+    loat,funksie,es,angesj,zolang,veur,enj,trok,aafbraeke,euversjlaon,
+    niks,woar,neetwoar,and,or
+  },
+  sensitive=true,
+  morecomment=[l]{\#},
+  morestring=[b]"
+}
+
+\lstset{
+  language=platlang,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{platkeyword}\bfseries,
+  commentstyle=\color{platcomment},
+  stringstyle=\color{platstring},
+  backgroundcolor=\color{platgray},
+  frame=single,
+  framerule=0pt,
+  rulecolor=\color{platgray},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  breaklines=true,
+  tabsize=4
+}
+
+\newcommand{\plat}{\texttt{plat-lang}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\papertodo}[1]{\textbf{TODO:} #1}
+
+\title{Designing a Programming Language Around Regional-Language Identity:\\
+The Case of \plat}
+\author{
+  % TODO: Add author names, affiliations, ORCID identifiers, and contact emails.
+}
+\date{
+  Draft scaffold, \today\\
+  % TODO: Replace with an arXiv-ready date and version once the artifact is archived.
+}
+
+\begin{document}
+\maketitle
+
+\input{sections/00-abstract}
+\input{sections/01-introduction}
+\input{sections/02-background}
+\input{sections/03-design-goals}
+\input{sections/04-language-overview}
+\input{sections/05-localization-and-cultural-identity}
+\input{sections/06-implementation}
+\input{sections/07-discussion}
+\input{sections/08-limitations}
+\input{sections/09-related-work}
+\input{sections/10-conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

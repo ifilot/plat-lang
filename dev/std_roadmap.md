@@ -1,5 +1,17 @@
 # plat-lang Standard Library Roadmap
 
+This file is a roadmap for work after the current language core. It is not the
+current standard library contract.
+
+The current standard library contains only:
+
+| Function | Purpose |
+| -------- | ------- |
+| `aafdrokke(value)`, `aafdrökke(value)` | Prints a value followed by a newline. |
+| `invuier()` | Reads one input line as text, or returns `niks` at end of input. |
+
+Everything else in this document is proposed future behavior.
+
 `plat-lang` will eventually need a standard library, but it should grow in the
 same spirit as the language itself: small, regular, table-centered, and easy to
 remember.
@@ -8,11 +20,11 @@ The standard library should provide practical tools for scripts without turning
 the language into a framework. Its first job is to make the existing primitive
 values pleasant to use:
 
-* `nommer`
+* `nómmer`
 * `teks`
 * `woar`
 * `niks`
-* `mepke`
+* `portefeuil`
 
 Because functions are global declarations and are not runtime values, early
 standard library features should be plain global functions. The library should
@@ -24,8 +36,9 @@ that require first-class functions.
 The standard library should follow these rules:
 
 * Prefer a small set of composable functions over many specialized helpers.
-* Treat `mepke` as the universal composite value.
-* Keep function names plain ASCII, matching the keyword policy.
+* Treat `portefeuil` as the universal composite value.
+* Keep ASCII spellings available, while allowing dialect-correct aliases with
+  diacritics where they improve the Limburgish spelling.
 * Prefer predictable behavior over clever shortcuts.
 * Make common scripting tasks easy.
 * Avoid features that imply missing language concepts.
@@ -38,33 +51,32 @@ A useful test for proposed additions is:
 
 If not, it probably does not belong in the first standard library.
 
-## Stage 1: Tiny Core
+## Stage 1: Value Helpers
 
-These functions form the smallest useful standard environment. They are likely
-to be native built-ins because they expose runtime behavior or host I/O.
+These functions are the next useful additions after the current minimal library.
+They are likely to be native built-ins because they expose runtime behavior or
+host I/O.
 
 | Function | Purpose |
 | -------- | ------- |
-| `aafdrokke(value)` | Prints a value followed by a newline. |
 | `teks(value)` | Converts any value to text. |
 | `soort(value)` | Returns the runtime type name of a value. |
 | `lengde(value)` | Returns the length of a string or table. |
 | `leeg(value)` | Returns whether a string or table is empty. |
 | `kopie(value)` | Returns a shallow copy of a string or table. |
 
-`aafdrokke` already exists as the first standard built-in. The remaining
-functions make reflection, conversion, and basic value handling explicit without
-adding new language syntax.
+These functions make reflection, conversion, and basic value handling explicit
+without adding new language syntax.
 
 `soort` should return the localized runtime type names:
 
-* `nommer`
+* `nómmer`
 * `teks`
 * `woar`
 * `niks`
-* `mepke`
+* `portefeuil`
 
-`lengde` and `leeg` should initially apply only to `teks` and `mepke`. Passing
+`lengde` and `leeg` should initially apply only to `teks` and `portefeuil`. Passing
 other values should be a runtime error unless a later design deliberately
 extends their behavior.
 
@@ -95,9 +107,9 @@ Array-like operations should follow the existing zero-based indexing rule.
 numbers or only strings. Mixed-type sorting can remain undefined or produce a
 runtime error until a clear ordering rule is designed.
 
-Higher-order functions such as `map`, `filter`, and `reduce` should wait. They
-do not fit the current language model because functions are not first-class
-values.
+Higher-order functions such as `map`, `filter`, and `reduce`
+should wait. They do not fit the current language model because functions are
+not first-class values.
 
 ## Stage 3: Strings
 
@@ -123,7 +135,7 @@ substring operations are easier to specify and easier to keep portable.
 ## Stage 4: Numbers and Math
 
 The numeric library should reflect the single-number model. All numbers are
-IEEE 754 double-precision values, so math functions should operate on `nommer`
+IEEE 754 double-precision values, so math functions should operate on `nómmer`
 without introducing integer-specific behavior.
 
 | Function | Purpose |

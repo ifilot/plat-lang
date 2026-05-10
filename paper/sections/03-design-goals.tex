@@ -1,0 +1,40 @@
+\section{Design Goals}
+
+The repository describes \plat{} as ``an experimental interpreter language
+where code stays small, rules stay regular, and the keywords come from
+Limburg.'' Its design notes emphasize simplicity, readability, composition,
+and a Limburgian linguistic surface. The language is inspired by Lua, Lisp,
+and Smalltalk, while aiming to remain smaller and simpler than those systems.
+
+Several goals recur across the repository:
+
+\begin{description}
+  \item[Smallness.] The language is built from a small set of concepts:
+        values, variables, expressions, functions, tables, conditionals, and
+        loops. The current standard library is intentionally tiny.
+  \item[Regularity.] The design avoids semicolons, complex type hierarchies,
+        overloaded object models, and large feature sets. Programs execute
+        top-level statements directly, and functions are global declarations.
+  \item[Approachability.] The syntax is lightweight, comments use \code{\#},
+        and examples are short. The implementation can print the AST with
+        \code{--ast}, which supports inspection and teaching.
+  \item[Cultural identity.] Core keywords use Limburgian words. The design
+        notes state that the language prefers the Sittard dialect where
+        possible, while recognizing that exact spelling and dialect choices
+        may evolve.
+  \item[Inspectability.] The implementation is organized around a parser,
+        AST, interpreter, runtime values, environments, and diagnostic
+        templates. This makes the artifact suitable for discussion as a small
+        language implementation rather than a black-box tool.
+\end{description}
+
+The most important design distinction is between technical simplicity and
+cultural intentionality. A small interpreter language with dynamic values,
+lexical environments, global functions, and mutable tables is not technically
+unusual. In \plat, that familiarity is intentional: it reduces the number of
+semantic novelties competing for attention, allowing the Limburgian surface
+syntax, diagnostics, examples, and naming choices to become the primary design
+material.
+
+% TODO: Add quotations from project maintainers or design issue discussions if
+% available. Such sources would strengthen the account of project intent.

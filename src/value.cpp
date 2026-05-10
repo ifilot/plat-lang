@@ -99,7 +99,7 @@ std::string Value::to_string() const {
 
     if (is_table()) {
         std::ostringstream out;
-        out << "mepke@" << as_table().get();
+        out << "portefeuil@" << as_table().get();
         return out.str();
     }
 

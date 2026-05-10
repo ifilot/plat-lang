@@ -1,0 +1,17 @@
+funksie odd(n):
+    es n == 0:
+        trok neetwoar
+    angesj:
+        trok even(n - 1)
+    enj
+enj
+
+aafdrokke(even(8))
+
+funksie even(n):
+    es n == 0:
+        trok woar
+    angesj:
+        trok odd(n - 1)
+    enj
+enj
