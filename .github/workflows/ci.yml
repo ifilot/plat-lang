@@ -9,7 +9,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test-linux:
@@ -34,11 +34,10 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure
 
-  package-linux:
-    name: Package Linux
+  static-linux:
+    name: Static Linux
     runs-on: ubuntu-latest
     needs: test-linux
-    if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -62,23 +61,24 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Prepare artifact
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p dist
           cp build/platlang dist/platlang-linux-x86_64
           chmod +x dist/platlang-linux-x86_64
 
       - name: Upload Linux artifact
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: platlang-linux-x86_64
           path: dist/platlang-linux-x86_64
           if-no-files-found: error
 
-  package-windows:
-    name: Package Windows
+  static-windows:
+    name: Static Windows
     runs-on: windows-latest
     needs: test-linux
-    if: startsWith(github.ref, 'refs/tags/v')
 
     defaults:
       run:
@@ -113,11 +113,13 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Prepare artifact
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p dist
           cp build/platlang.exe dist/platlang-windows-x86_64.exe
 
       - name: Upload Windows artifact
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: platlang-windows-x86_64
@@ -128,9 +130,11 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs:
-      - package-linux
-      - package-windows
+      - static-linux
+      - static-windows
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
 
     steps:
       - name: Download release artifacts
