@@ -33,6 +33,10 @@ Thumbs.db
 # documentation
 site/
 
+# Python cache files
+__pycache__/
+*.py[cod]
+
 # LaTeX paper build outputs
 paper/*.aux
 paper/*.bbl
