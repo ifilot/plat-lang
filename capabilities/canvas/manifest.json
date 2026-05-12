@@ -1,0 +1,7 @@
+{
+  "name": "canvas",
+  "version": "0.1.0",
+  "abi": 1,
+  "library": "builtin:canvas",
+  "provides": ["canvas"]
+}

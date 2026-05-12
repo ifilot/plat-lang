@@ -1,10 +1,13 @@
 #pragma once
 
 #include "ast.h"
+#include "builtins/builtin_registry.h"
+#include "capabilities/capability_loader.h"
 #include "diagnostics.h"
 #include "environment.h"
 #include "value.h"
 
+#include <filesystem>
 #include <memory>
 #include <istream>
 #include <ostream>
@@ -23,6 +26,9 @@ private:
     DiagnosticReporter *diagnostics_;
     std::istream *input_;
     std::ostream *output_;
+    BuiltinContext builtin_context_;
+    BuiltinRegistry builtins_;
+    CapabilityLoader capability_loader_;
     std::shared_ptr<const std::unordered_set<std::string>> protected_names_;
     std::shared_ptr<Environment> global_environment_;
     std::shared_ptr<Environment> environment_;
@@ -39,7 +45,8 @@ public:
      * @param output Output stream for built-in functions.
      */
     Interpreter(DiagnosticReporter &diagnostics, std::istream &input,
-                std::ostream &output);
+                std::ostream &output,
+                std::vector<std::filesystem::path> capability_search_paths);
 
     /**
      * Executes a complete program.
@@ -55,6 +62,18 @@ private:
      * @param program Program AST to scan.
      */
     void register_top_level_functions(const Program &program);
+
+    /**
+     * Loads all top-level native capability imports before execution.
+     *
+     * @param program Program AST to scan.
+     */
+    void load_imports(const Program &program);
+
+    /**
+     * Rebuilds protected-name and global environment state after imports.
+     */
+    void refresh_global_environment();
 
     /**
      * Executes a statement.
@@ -99,42 +118,6 @@ private:
      * @return Function return value.
      */
     Value call_function(const CallExpr &call);
-
-    /**
-     * Calls the `aafdrokke` built-in.
-     *
-     * @param name Name used at the call site.
-     * @param args Evaluated function arguments.
-     * @param location Source location of the call.
-     * @return Built-in return value.
-     */
-    Value call_print_builtin(const std::string &name,
-                             const std::vector<Value> &args,
-                             SourceLocation location);
-
-    /**
-     * Calls the `invuier` built-in.
-     *
-     * @param name Name used at the call site.
-     * @param args Evaluated function arguments.
-     * @param location Source location of the call.
-     * @return Read line, or `niks` at end of input.
-     */
-    Value call_input_builtin(const std::string &name,
-                             const std::vector<Value> &args,
-                             SourceLocation location);
-
-    /**
-     * Calls the `waatis` built-in.
-     *
-     * @param name Name used at the call site.
-     * @param args Evaluated function arguments.
-     * @param location Source location of the call.
-     * @return `niks` after printing the runtime type name.
-     */
-    Value call_type_builtin(const std::string &name,
-                            const std::vector<Value> &args,
-                            SourceLocation location);
 
     /**
      * Evaluates all call arguments.

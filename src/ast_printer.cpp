@@ -110,6 +110,13 @@ void AstPrinter::print_stmt(const Stmt &stmt) {
         return;
     }
 
+    if (const auto *node = dynamic_cast<const ImportStmt *>(&stmt)) {
+        print_line("ImportStmt module=\"" + node->module_name() + "\"");
+        print_location(node->location());
+        *stream_ << '\n';
+        return;
+    }
+
     if (const auto *node = dynamic_cast<const WhileStmt *>(&stmt)) {
         print_line("WhileStmt");
         print_location(node->location());

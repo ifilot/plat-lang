@@ -51,6 +51,7 @@ enum class DiagnosticId {
     InvalidAssignmentTarget,
     InvalidOperand,
     DivisionByZero,
+    RuntimeError,
     InternalError,
 };
 

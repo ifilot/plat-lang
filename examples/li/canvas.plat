@@ -1,0 +1,31 @@
+# Canvas-voorbeeld. De minimale module neemt de tekenopdrach op zónger
+# venster; ein SDL-module kin later dezelfde code zichtbaar make.
+
+inlaaje "canvas"
+
+loat doek = canvas(640, 480, "Plat-lang canvas")
+
+canvas_wis(doek, "white")
+
+canvas_rechhook(doek, 40, 40, 180, 90, {
+    vulling = "lightblue",
+    rand = "navy",
+    breide = 3,
+})
+
+canvas_sirkel(doek, 320, 220, 60, {
+    vulling = "tomato",
+})
+
+canvas_teks(doek, 50, 170, "Hallo canvas", {
+    kleur = "black",
+    greutte = 28,
+})
+
+canvas_lien(doek, 20, 20, 400, 300, {
+    kleur = "gray",
+    breide = 2,
+})
+
+canvas_toon(doek)
+canvas_wach(doek)

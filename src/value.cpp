@@ -18,6 +18,9 @@ Value::Value(std::string value)
 
 Value::Value(std::shared_ptr<TableValue> value) : data_(std::move(value)) {}
 
+Value::Value(std::shared_ptr<NativeHandleValue> value)
+    : data_(std::move(value)) {}
+
 bool Value::is_nil() const {
     return std::holds_alternative<NilValue>(data_);
 }
@@ -38,6 +41,10 @@ bool Value::is_table() const {
     return std::holds_alternative<std::shared_ptr<TableValue>>(data_);
 }
 
+bool Value::is_native_handle() const {
+    return std::holds_alternative<std::shared_ptr<NativeHandleValue>>(data_);
+}
+
 double Value::as_number() const {
     return std::get<double>(data_);
 }
@@ -52,6 +59,10 @@ const std::shared_ptr<std::string> &Value::as_string() const {
 
 const std::shared_ptr<TableValue> &Value::as_table() const {
     return std::get<std::shared_ptr<TableValue>>(data_);
+}
+
+const std::shared_ptr<NativeHandleValue> &Value::as_native_handle() const {
+    return std::get<std::shared_ptr<NativeHandleValue>>(data_);
 }
 
 bool Value::is_truthy() const {
@@ -73,6 +84,10 @@ bool Value::is_truthy() const {
 
     if (is_table()) {
         return !as_table()->empty();
+    }
+
+    if (is_native_handle()) {
+        return true;
     }
 
     return true;
@@ -103,6 +118,10 @@ std::string Value::to_string() const {
         return out.str();
     }
 
+    if (is_native_handle()) {
+        return as_native_handle()->debug_string();
+    }
+
     throw std::logic_error("unknown value type");
 }
 
@@ -128,6 +147,28 @@ std::size_t TableKeyHash::operator()(const TableKey &key) const {
     return std::hash<std::string>()(std::get<std::string>(key.value()));
 }
 
+NativeHandleValue::NativeHandleValue(std::string kind, std::string type_name,
+                                     std::size_t id)
+    : kind_(std::move(kind)), type_name_(std::move(type_name)), id_(id) {}
+
+const std::string &NativeHandleValue::kind() const {
+    return kind_;
+}
+
+const std::string &NativeHandleValue::type_name() const {
+    return type_name_;
+}
+
+std::size_t NativeHandleValue::id() const {
+    return id_;
+}
+
+std::string NativeHandleValue::debug_string() const {
+    std::ostringstream out;
+    out << kind_ << "@" << id_;
+    return out.str();
+}
+
 void TableValue::set(const TableKey &key, Value value) {
     entries_[key] = std::move(value);
 }
@@ -143,6 +184,11 @@ Value TableValue::get(const TableKey &key) const {
 
 bool TableValue::empty() const {
     return entries_.empty();
+}
+
+const std::unordered_map<TableKey, Value, TableKeyHash> &TableValue::entries()
+    const {
+    return entries_;
 }
 
 bool value_to_table_key(const Value &value, TableKey &key) {
@@ -178,6 +224,10 @@ bool values_equal(const Value &left, const Value &right) {
 
     if (left.is_table() && right.is_table()) {
         return left.as_table() == right.as_table();
+    }
+
+    if (left.is_native_handle() && right.is_native_handle()) {
+        return left.as_native_handle() == right.as_native_handle();
     }
 
     return false;

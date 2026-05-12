@@ -34,6 +34,17 @@ void run_value_tests(TestContext &context) {
     EXPECT_TRUE(context, table->get(TableKey(0.0)).is_number());
     EXPECT_EQ(context, table->get(TableKey(0.0)).as_number(), 42.0);
 
+    auto handle = std::make_shared<NativeHandleValue>("canvas",
+                                                       "canvas", 7);
+    Value handle_value(handle);
+    EXPECT_TRUE(context, handle_value.is_native_handle());
+    EXPECT_TRUE(context, handle_value.is_truthy());
+    EXPECT_EQ(context, handle_value.to_string(), "canvas@7");
+    EXPECT_TRUE(context, values_equal(handle_value, Value(handle)));
+    EXPECT_FALSE(context, values_equal(handle_value,
+                                       Value(std::make_shared<NativeHandleValue>(
+                                           "canvas", "canvas", 7))));
+
     TableKey key;
     EXPECT_TRUE(context, value_to_table_key(Value(std::string("name")), key));
     EXPECT_FALSE(context, value_to_table_key(Value(true), key));

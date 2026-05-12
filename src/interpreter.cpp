@@ -1,20 +1,14 @@
 #include "interpreter.h"
 
+#include "builtins/core_builtins.h"
+
 #include <cmath>
-#include <istream>
-#include <sstream>
 #include <stdexcept>
-#include <string_view>
 #include <utility>
 
 namespace plat {
 namespace {
 
-inline constexpr std::string_view kPrintBuiltinAscii = "aafdrokke";
-inline constexpr std::string_view kPrintBuiltinComposed = "aafdrökke";
-inline constexpr std::string_view kPrintBuiltinDecomposed = "aafdro\xCC\x88kke";
-inline constexpr std::string_view kInputBuiltin = "invuier";
-inline constexpr std::string_view kTypeBuiltin = "waatis";
 inline constexpr std::string_view kNumberTypeAscii = "nommer";
 inline constexpr std::string_view kNumberTypeComposed = "nómmer";
 inline constexpr std::string_view kNumberTypeDecomposed = "no\xCC\x81mmer";
@@ -57,111 +51,45 @@ class ContinueSignal {};
  *
  * @return Protected names.
  */
-std::shared_ptr<const std::unordered_set<std::string>> make_protected_names() {
+std::shared_ptr<const std::unordered_set<std::string>> make_protected_names(
+    const BuiltinRegistry &builtins) {
+    std::unordered_set<std::string> names{
+        "aafbraeke", "angesj", "enj", "es", "funksie", "inlaaje", "loat",
+        "portefeuil", "neetwoar", "niks", std::string(kNumberTypeAscii),
+        std::string(kNumberTypeComposed), std::string(kNumberTypeDecomposed),
+        "teks", "trok", "veur", "euversjlaon", "woar", "zolang"};
+
+    for (std::string builtin_name : builtins.names()) {
+        names.insert(std::move(builtin_name));
+    }
+
     return std::make_shared<const std::unordered_set<std::string>>(
-        std::unordered_set<std::string>{
-            "aafbraeke", std::string(kPrintBuiltinAscii),
-            std::string(kPrintBuiltinComposed),
-            std::string(kPrintBuiltinDecomposed), "angesj", "enj", "es",
-            "funksie", std::string(kInputBuiltin), "loat", "portefeuil",
-            "neetwoar", "niks", std::string(kNumberTypeAscii),
-            std::string(kNumberTypeComposed),
-            std::string(kNumberTypeDecomposed), "teks", "trok", "veur",
-            "euversjlaon", std::string(kTypeBuiltin), "woar", "zolang"});
-}
-
-/**
- * Returns whether a name refers to the print built-in.
- *
- * @param name Candidate function name.
- * @return True when the name is a supported alias.
- */
-bool is_print_builtin_name(std::string_view name) {
-    return name == kPrintBuiltinAscii || name == kPrintBuiltinComposed ||
-           name == kPrintBuiltinDecomposed;
-}
-
-/**
- * Returns whether a name refers to the input built-in.
- *
- * @param name Candidate function name.
- * @return True when the name is a supported alias.
- */
-bool is_input_builtin_name(std::string_view name) {
-    return name == kInputBuiltin;
-}
-
-/**
- * Returns whether a name refers to the type built-in.
- *
- * @param name Candidate function name.
- * @return True when the name is a supported alias.
- */
-bool is_type_builtin_name(std::string_view name) {
-    return name == kTypeBuiltin;
-}
-
-/**
- * Returns the user-facing runtime type name for a value.
- *
- * @param value Runtime value.
- * @return Localized type name.
- */
-std::string_view value_type_name(const Value &value) {
-    if (value.is_nil()) {
-        return "niks";
-    }
-
-    if (value.is_number()) {
-        return kNumberTypeComposed;
-    }
-
-    if (value.is_bool()) {
-        return "woar";
-    }
-
-    if (value.is_string()) {
-        return "teks";
-    }
-
-    if (value.is_table()) {
-        return "portefeuil";
-    }
-
-    throw std::logic_error("unknown value type");
-}
-
-/**
- * Converts a number to a string for diagnostics.
- *
- * @param value Number value.
- * @return String representation.
- */
-std::string number_to_string(std::size_t value) {
-    std::ostringstream out;
-    out << value;
-    return out.str();
+        std::move(names));
 }
 
 } // namespace
 
 Interpreter::Interpreter(DiagnosticReporter &diagnostics, std::istream &input,
-                         std::ostream &output)
+                         std::ostream &output,
+                         std::vector<std::filesystem::path> capability_search_paths)
     : diagnostics_(&diagnostics),
       input_(&input),
       output_(&output),
-      protected_names_(make_protected_names()) {
-    global_environment_ =
-        std::make_shared<Environment>(protected_names_, diagnostics);
-    environment_ = global_environment_;
+      builtin_context_(diagnostics, input, output),
+      capability_loader_(diagnostics, std::move(capability_search_paths)) {
+    register_core_builtins(builtins_);
+    refresh_global_environment();
 }
 
 void Interpreter::execute_program(const Program &program) {
     try {
+        load_imports(program);
+        refresh_global_environment();
         register_top_level_functions(program);
 
         for (const StmtPtr &stmt : program.statements()) {
-            if (dynamic_cast<const FunctionDecl *>(stmt.get()) == nullptr) {
+            if (dynamic_cast<const FunctionDecl *>(stmt.get()) == nullptr &&
+                dynamic_cast<const ImportStmt *>(stmt.get()) == nullptr) {
                 execute_stmt(*stmt);
             }
         }
@@ -184,10 +112,30 @@ void Interpreter::register_top_level_functions(const Program &program) {
     }
 }
 
+void Interpreter::load_imports(const Program &program) {
+    for (const StmtPtr &stmt : program.statements()) {
+        if (const auto *import = dynamic_cast<const ImportStmt *>(stmt.get())) {
+            capability_loader_.load(import->module_name(), builtins_,
+                                    import->location());
+        }
+    }
+}
+
+void Interpreter::refresh_global_environment() {
+    protected_names_ = make_protected_names(builtins_);
+    global_environment_ =
+        std::make_shared<Environment>(protected_names_, *diagnostics_);
+    environment_ = global_environment_;
+}
+
 void Interpreter::execute_stmt(const Stmt &stmt) {
     if (const auto *node = dynamic_cast<const FunctionDecl *>(&stmt)) {
         diagnostics_->fatal(DiagnosticId::FunctionDeclarationInBlock,
                             node->location());
+    }
+
+    if (dynamic_cast<const ImportStmt *>(&stmt) != nullptr) {
+        return;
     }
 
     if (const auto *node = dynamic_cast<const VarDeclStmt *>(&stmt)) {
@@ -507,16 +455,9 @@ void Interpreter::register_function(const FunctionDecl &function) {
 Value Interpreter::call_function(const CallExpr &call) {
     std::vector<Value> args = evaluate_arguments(call.args());
 
-    if (is_print_builtin_name(call.callee())) {
-        return call_print_builtin(call.callee(), args, call.location());
-    }
-
-    if (is_input_builtin_name(call.callee())) {
-        return call_input_builtin(call.callee(), args, call.location());
-    }
-
-    if (is_type_builtin_name(call.callee())) {
-        return call_type_builtin(call.callee(), args, call.location());
+    if (builtins_.contains(call.callee())) {
+        return builtins_.call(builtin_context_, call.callee(), args,
+                              call.location());
     }
 
     const auto found = functions_.find(call.callee());
@@ -530,8 +471,9 @@ Value Interpreter::call_function(const CallExpr &call) {
         diagnostics_->fatal(
             DiagnosticId::ArityMismatch, call.location(),
             {DiagnosticArg("name", function.name()),
-             DiagnosticArg("expected", number_to_string(function.params().size())),
-             DiagnosticArg("actual", number_to_string(args.size()))});
+             DiagnosticArg("expected",
+                           builtin_count_to_string(function.params().size())),
+             DiagnosticArg("actual", builtin_count_to_string(args.size()))});
     }
 
     auto previous = environment_;
@@ -557,58 +499,6 @@ Value Interpreter::call_function(const CallExpr &call) {
 
     --function_depth_;
     environment_ = previous;
-    return Value();
-}
-
-Value Interpreter::call_print_builtin(const std::string &name,
-                                      const std::vector<Value> &args,
-                                      SourceLocation location) {
-    if (args.size() != 1) {
-        diagnostics_->fatal(
-            DiagnosticId::ArityMismatch, location,
-            {DiagnosticArg("name", name),
-             DiagnosticArg("expected", "1"),
-             DiagnosticArg("actual", number_to_string(args.size()))});
-    }
-
-    *output_ << args[0].to_string() << '\n';
-    return Value();
-}
-
-Value Interpreter::call_input_builtin(const std::string &name,
-                                      const std::vector<Value> &args,
-                                      SourceLocation location) {
-    if (!args.empty()) {
-        diagnostics_->fatal(
-            DiagnosticId::ArityMismatch, location,
-            {DiagnosticArg("name", name),
-             DiagnosticArg("expected", "0"),
-             DiagnosticArg("actual", number_to_string(args.size()))});
-    }
-
-    std::string line;
-    if (std::getline(*input_, line)) {
-        if (!line.empty() && line.back() == '\r') {
-            line.pop_back();
-        }
-        return Value(line);
-    }
-
-    return Value();
-}
-
-Value Interpreter::call_type_builtin(const std::string &name,
-                                     const std::vector<Value> &args,
-                                     SourceLocation location) {
-    if (args.size() != 1) {
-        diagnostics_->fatal(
-            DiagnosticId::ArityMismatch, location,
-            {DiagnosticArg("name", name),
-             DiagnosticArg("expected", "1"),
-             DiagnosticArg("actual", number_to_string(args.size()))});
-    }
-
-    *output_ << value_type_name(args[0]) << '\n';
     return Value();
 }
 

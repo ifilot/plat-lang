@@ -65,6 +65,7 @@ constexpr DiagnosticTemplate kEnglishDiagnostics[] = {
     {DiagnosticId::InvalidAssignmentTarget, "invalid assignment target"},
     {DiagnosticId::InvalidOperand, "invalid operand for operator '{operator}'"},
     {DiagnosticId::DivisionByZero, "division by zero"},
+    {DiagnosticId::RuntimeError, "{message}"},
     {DiagnosticId::InternalError, "internal error: {message}"},
 };
 
@@ -91,6 +92,7 @@ constexpr DiagnosticTemplate kLimburgishDiagnostics[] = {
     {DiagnosticId::InvalidAssignmentTarget, "ongeljig doel veur toewiezing"},
     {DiagnosticId::InvalidOperand, "ongeljige operand veur operator '{operator}'"},
     {DiagnosticId::DivisionByZero, "deile door nul"},
+    {DiagnosticId::RuntimeError, "{message}"},
     {DiagnosticId::InternalError, "interne fout: {message}"},
 };
 

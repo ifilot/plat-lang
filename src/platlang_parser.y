@@ -41,11 +41,11 @@ plat::DiagnosticReporter *platlang_diagnostics = nullptr;
 %token <number> NUMBER
 %token <text> STRING
 %token <text> IDENTIFIER
-%token LOAT FUNKSIE ES ANGESJ ZOLANG VEUR ENJ TROK AAFBRAEKE EUVERSJLAON
+%token LOAT FUNKSIE ES ANGESJ ZOLANG VEUR ENJ TROK AAFBRAEKE EUVERSJLAON INLAAJE
 %token NIKS WOAR NEETWOAR
 %token EQ NEQ LE GE AND OR
 
-%type <stmt> top_level_stmt stmt function_decl var_decl assignment expr_stmt return_stmt break_stmt continue_stmt if_stmt while_stmt for_stmt
+%type <stmt> top_level_stmt stmt function_decl import_stmt var_decl assignment expr_stmt return_stmt break_stmt continue_stmt if_stmt while_stmt for_stmt
 %type <expr> expr logical_or logical_and equality comparison term factor unary postfix primary literal table table_key
 %type <stmts> top_level_list block maybe_else
 %type <exprs> argument_list maybe_arguments
@@ -89,7 +89,15 @@ top_level_list:
 
 top_level_stmt:
   function_decl { $$ = $1; }
+| import_stmt { $$ = $1; }
 | stmt { $$ = $1; }
+;
+
+import_stmt:
+  INLAAJE STRING {
+    $$ = new plat::ImportStmt(LOC(@1), *$2);
+    delete $2;
+  }
 ;
 
 function_decl:

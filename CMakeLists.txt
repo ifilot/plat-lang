@@ -6,8 +6,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 enable_testing()
 
+option(PLATLANG_ENABLE_CANVAS "Build canvas host-capability support" ON)
+option(PLATLANG_ENABLE_SDL_CANVAS "Build SDL2 canvas backend" OFF)
+
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+find_package(PkgConfig)
 
 BISON_TARGET(
   PlatLangParser
@@ -27,11 +31,36 @@ ADD_FLEX_BISON_DEPENDENCY(PlatLangLexer PlatLangParser)
 
 add_library(platlang_core
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ast_printer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/builtins/builtin_registry.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/builtins/canvas_builtins.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/builtins/core_builtins.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/capabilities/capability_loader.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/canvas/canvas_service.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/canvas/recording_canvas_backend.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/diagnostics.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/interpreter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/value.cpp
 )
+
+target_compile_definitions(platlang_core PUBLIC
+  PLATLANG_ENABLE_CANVAS=$<BOOL:${PLATLANG_ENABLE_CANVAS}>
+  PLATLANG_ENABLE_SDL_CANVAS=$<BOOL:${PLATLANG_ENABLE_SDL_CANVAS}>
+)
+
+if(PLATLANG_ENABLE_SDL_CANVAS)
+  if(NOT PkgConfig_FOUND)
+    message(FATAL_ERROR "PkgConfig is required for PLATLANG_ENABLE_SDL_CANVAS")
+  endif()
+  pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+  target_sources(platlang_core PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/canvas/sdl_canvas_backend.cpp
+  )
+  target_link_libraries(platlang_core PUBLIC PkgConfig::SDL2)
+endif()
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/capabilities
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 target_include_directories(platlang_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -61,6 +90,8 @@ target_compile_options(platlang PRIVATE
 )
 
 add_executable(platlang_unit_tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/builtin_registry_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/canvas_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/diagnostics_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/test_main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/value_test.cpp
@@ -113,3 +144,7 @@ add_platlang_e2e_test(continue_outside_loop)
 add_platlang_e2e_test(division_by_zero)
 add_platlang_e2e_test(nested_function)
 add_platlang_e2e_test(undeclared_variable_li)
+add_platlang_e2e_test(canvas_unavailable)
+add_platlang_e2e_test(import_canvas_basic)
+add_platlang_e2e_test(import_unknown)
+add_platlang_e2e_test(import_canvas_protected_name)

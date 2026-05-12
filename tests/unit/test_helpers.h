@@ -53,6 +53,20 @@ void run_value_tests(TestContext &context);
  */
 void run_diagnostics_tests(TestContext &context);
 
+/**
+ * Runs built-in registry unit tests.
+ *
+ * @param context Test context.
+ */
+void run_builtin_registry_tests(TestContext &context);
+
+/**
+ * Runs canvas subsystem unit tests.
+ *
+ * @param context Test context.
+ */
+void run_canvas_tests(TestContext &context);
+
 } // namespace plat::test
 
 #define EXPECT_TRUE(context, expr) \

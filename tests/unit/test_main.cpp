@@ -8,6 +8,8 @@
 int main() {
     plat::test::TestContext context;
 
+    plat::test::run_builtin_registry_tests(context);
+    plat::test::run_canvas_tests(context);
     plat::test::run_value_tests(context);
     plat::test::run_diagnostics_tests(context);
 

@@ -14,6 +14,7 @@ namespace plat {
 class NilValue {};
 
 class TableValue;
+class NativeHandleValue;
 
 /**
  * Runtime value used by the interpreter.
@@ -21,7 +22,8 @@ class TableValue;
 class Value {
 private:
     using Data = std::variant<NilValue, double, bool, std::shared_ptr<std::string>,
-                              std::shared_ptr<TableValue>>;
+                              std::shared_ptr<TableValue>,
+                              std::shared_ptr<NativeHandleValue>>;
 
     Data data_;
 
@@ -60,6 +62,13 @@ public:
     explicit Value(std::shared_ptr<TableValue> value);
 
     /**
+     * Creates a native host-backed handle value.
+     *
+     * @param value Native handle storage.
+     */
+    explicit Value(std::shared_ptr<NativeHandleValue> value);
+
+    /**
      * Returns true when this value is `niks`.
      *
      * @return True for `niks`.
@@ -95,6 +104,13 @@ public:
     bool is_table() const;
 
     /**
+     * Returns true when this value is a native host-backed handle.
+     *
+     * @return True for native handles.
+     */
+    bool is_native_handle() const;
+
+    /**
      * Returns the number value.
      *
      * @return Number value.
@@ -121,6 +137,13 @@ public:
      * @return Mutable table storage.
      */
     const std::shared_ptr<TableValue> &as_table() const;
+
+    /**
+     * Returns the native handle storage.
+     *
+     * @return Native handle storage.
+     */
+    const std::shared_ptr<NativeHandleValue> &as_native_handle() const;
 
     /**
      * Returns whether the value is truthy.
@@ -195,6 +218,24 @@ public:
 };
 
 /**
+ * Opaque native host-backed value with identity semantics.
+ */
+class NativeHandleValue {
+private:
+    std::string kind_;
+    std::string type_name_;
+    std::size_t id_;
+
+public:
+    NativeHandleValue(std::string kind, std::string type_name, std::size_t id);
+
+    const std::string &kind() const;
+    const std::string &type_name() const;
+    std::size_t id() const;
+    std::string debug_string() const;
+};
+
+/**
  * Mutable table storage with identity semantics.
  */
 class TableValue {
@@ -224,6 +265,13 @@ public:
      * @return True when the table has no entries.
      */
     bool empty() const;
+
+    /**
+     * Returns all stored entries.
+     *
+     * @return Table entries.
+     */
+    const std::unordered_map<TableKey, Value, TableKeyHash> &entries() const;
 };
 
 /**

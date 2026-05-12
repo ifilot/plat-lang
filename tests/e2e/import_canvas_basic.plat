@@ -1,0 +1,26 @@
+inlaaje "canvas"
+
+loat doek = canvas(64, 48, "Demo")
+waatis(doek)
+aafdrokke(canvas_ope(doek))
+
+canvas_wis(doek, "white")
+canvas_lien(doek, 0, 0, 63, 47, {
+    kleur = "gray",
+    breide = 2,
+})
+canvas_rechhook(doek, 5, 5, 20, 12, {
+    vulling = "lightblue",
+    rand = "navy",
+})
+canvas_sirkel(doek, 32, 24, 10, {
+    vulling = "tomato",
+})
+canvas_teks(doek, 8, 36, "Hoi", {
+    kleur = "black",
+    greutte = 14,
+})
+canvas_toon(doek)
+canvas_sloet(doek)
+
+aafdrokke(canvas_ope(doek))

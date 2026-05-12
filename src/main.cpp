@@ -5,10 +5,12 @@
 #include "version.h"
 
 #include <cstdio>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <string_view>
+#include <vector>
 
 extern FILE *yyin;
 extern std::unique_ptr<plat::Program> platlang_program;
@@ -165,6 +167,26 @@ std::optional<CommandLineOptions> parse_command_line(
     return options;
 }
 
+std::vector<std::filesystem::path> capability_search_paths(
+    const char *argv0, const char *input_path) {
+    std::vector<std::filesystem::path> paths;
+
+    if (input_path != nullptr) {
+        paths.push_back(std::filesystem::absolute(input_path).parent_path() /
+                        "capabilities");
+    }
+
+    paths.push_back(std::filesystem::current_path() / "capabilities");
+
+    const std::filesystem::path executable_path(argv0);
+    if (executable_path.has_parent_path()) {
+        paths.push_back(std::filesystem::absolute(executable_path).parent_path() /
+                        "capabilities");
+    }
+
+    return paths;
+}
+
 /**
  * Parses a plat-lang source file and reports the number of top-level AST nodes.
  *
@@ -219,7 +241,9 @@ int main(int argc, char **argv) {
     } else {
         try {
             if (platlang_program != nullptr) {
-                plat::Interpreter interpreter(reporter, std::cin, std::cout);
+                plat::Interpreter interpreter(
+                    reporter, std::cin, std::cout,
+                    capability_search_paths(argv[0], options->input_path()));
                 interpreter.execute_program(*platlang_program);
             }
         } catch (const plat::PlatlangError &) {

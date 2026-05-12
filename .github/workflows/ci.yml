@@ -23,19 +23,24 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++ flex bison ninja-build
+          sudo apt-get install -y cmake g++ flex bison ninja-build libsdl2-dev
 
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DPLATLANG_ENABLE_SDL_CANVAS=ON
 
       - name: Build
         run: cmake --build build --parallel
 
       - name: Test
+        env:
+          SDL_VIDEODRIVER: dummy
         run: ctest --test-dir build --output-on-failure
 
-  static-linux:
-    name: Static Linux
+  package-linux:
+    name: Package Linux
     runs-on: ubuntu-latest
     needs: test-linux
 
@@ -46,43 +51,77 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++ flex bison ninja-build
+          sudo apt-get install -y cmake g++ flex bison ninja-build libsdl2-dev patchelf
 
-      - name: Configure static build
+      - name: Configure release build
         run: >
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++"
+          -DPLATLANG_ENABLE_SDL_CANVAS=ON
+          -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
 
       - name: Build
         run: cmake --build build --parallel
 
       - name: Test
+        env:
+          SDL_VIDEODRIVER: dummy
         run: ctest --test-dir build --output-on-failure
 
-      - name: Prepare artifact
+      - name: Prepare package
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         run: |
-          mkdir -p dist
           if [ "${GITHUB_REF_NAME}" = "develop" ]; then
-            output="dist/platlang-develop-linux-x86_64"
+            package_name="platlang-develop-linux-x86_64"
           else
-            output="dist/platlang-linux-x86_64"
+            package_name="platlang-linux-x86_64"
           fi
-          cp build/platlang "$output"
-          strip "$output"
-          chmod +x "$output"
+
+          package_dir="dist/${package_name}"
+          mkdir -p "${package_dir}/bin" "${package_dir}/lib"
+          cp build/platlang "${package_dir}/bin/platlang"
+          cp -R build/capabilities "${package_dir}/capabilities"
+
+          sdl_lib="$(ldd "${package_dir}/bin/platlang" | awk '/libSDL2-2.0.so/ { print $3; exit }')"
+          if [ -z "${sdl_lib}" ] || [ ! -f "${sdl_lib}" ]; then
+            echo "could not find linked SDL2 runtime with ldd" >&2
+            ldd "${package_dir}/bin/platlang" >&2
+            exit 1
+          fi
+          cp "${sdl_lib}" "${package_dir}/lib/"
+
+          patchelf --set-rpath '$ORIGIN/../lib' "${package_dir}/bin/platlang"
+          strip "${package_dir}/bin/platlang" "${package_dir}/lib/"*.so*
+          chmod +x "${package_dir}/bin/platlang"
+
+          LD_LIBRARY_PATH="${package_dir}/lib" ldd "${package_dir}/bin/platlang" | tee "${package_dir}/ldd.txt"
+          if grep -q "not found" "${package_dir}/ldd.txt"; then
+            echo "package has missing shared library dependencies" >&2
+            exit 1
+          fi
+
+          while IFS= read -r library; do
+            LD_LIBRARY_PATH="${package_dir}/lib" ldd "${library}" | tee -a "${package_dir}/ldd.txt"
+          done < <(find "${package_dir}/lib" -type f -name '*.so*')
+
+          if grep -q "not found" "${package_dir}/ldd.txt"; then
+            echo "bundled shared library has missing dependencies" >&2
+            exit 1
+          fi
+
+          mkdir -p dist/artifacts
+          tar -czf "dist/artifacts/${package_name}.tar.gz" -C dist "${package_name}"
 
       - name: Upload Linux artifact
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
           name: platlang-linux-x86_64
-          path: dist/*
+          path: dist/artifacts/*
           if-no-files-found: error
 
-  static-windows:
-    name: Static Windows
+  package-windows:
+    name: Package Windows
     runs-on: windows-latest
     needs: test-linux
 
@@ -103,48 +142,72 @@ jobs:
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-SDL2
             flex
             bison
             diffutils
 
-      - name: Configure static build
+      - name: Configure release build
         run: >
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
+          -DPLATLANG_ENABLE_SDL_CANVAS=ON
           -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++"
 
       - name: Build
         run: cmake --build build --parallel
 
       - name: Test
+        env:
+          SDL_VIDEODRIVER: dummy
         run: ctest --test-dir build --output-on-failure
 
-      - name: Prepare artifact
+      - name: Prepare package
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         run: |
-          mkdir -p dist
           if [ "${GITHUB_REF_NAME}" = "develop" ]; then
-            output="dist/platlang-develop-windows-x86_64.exe"
+            package_name="platlang-develop-windows-x86_64"
           else
-            output="dist/platlang-windows-x86_64.exe"
+            package_name="platlang-windows-x86_64"
           fi
-          cp build/platlang.exe "$output"
-          strip "$output"
+
+          package_dir="dist/${package_name}"
+          mkdir -p "${package_dir}"
+          cp build/platlang.exe "${package_dir}/platlang.exe"
+          cp -R build/capabilities "${package_dir}/capabilities"
+
+          ldd "${package_dir}/platlang.exe" | tee "${package_dir}/ldd.txt"
+          if grep -q "not found" "${package_dir}/ldd.txt"; then
+            echo "package has missing shared library dependencies" >&2
+            exit 1
+          fi
+
+          ldd "${package_dir}/platlang.exe" \
+            | awk '/\/ucrt64\// { print $3 }' \
+            | sort -u \
+            | while IFS= read -r dependency; do
+                cp "${dependency}" "${package_dir}/"
+              done
+
+          strip "${package_dir}/platlang.exe" || true
+          mkdir -p dist/artifacts
+          cmake -E tar cf "dist/artifacts/${package_name}.zip" --format=zip -C dist "${package_name}"
 
       - name: Upload Windows artifact
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
           name: platlang-windows-x86_64
-          path: dist/*
+          path: dist/artifacts/*
           if-no-files-found: error
 
   release:
     name: Release
     runs-on: ubuntu-latest
     needs:
-      - static-linux
-      - static-windows
+      - package-linux
+      - package-windows
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -163,8 +226,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
-            dist/platlang-linux-x86_64/platlang-linux-x86_64 \
-            dist/platlang-windows-x86_64/platlang-windows-x86_64.exe \
+            dist/platlang-linux-x86_64/platlang-linux-x86_64.tar.gz \
+            dist/platlang-windows-x86_64/platlang-windows-x86_64.zip \
             --repo "${GITHUB_REPOSITORY}" \
             --title "plat-lang ${GITHUB_REF_NAME}" \
             --notes "Release ${GITHUB_REF_NAME}"
@@ -173,8 +236,8 @@ jobs:
     name: Develop Release
     runs-on: ubuntu-latest
     needs:
-      - static-linux
-      - static-windows
+      - package-linux
+      - package-windows
     if: github.ref == 'refs/heads/develop'
     permissions:
       contents: write
@@ -222,7 +285,7 @@ jobs:
           fi
 
           gh release upload develop-latest \
-            dist/platlang-linux-x86_64/platlang-develop-linux-x86_64 \
-            dist/platlang-windows-x86_64/platlang-develop-windows-x86_64.exe \
+            dist/platlang-linux-x86_64/platlang-develop-linux-x86_64.tar.gz \
+            dist/platlang-windows-x86_64/platlang-develop-windows-x86_64.zip \
             --repo "${GITHUB_REPOSITORY}" \
             --clobber

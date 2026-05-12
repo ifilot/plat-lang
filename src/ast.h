@@ -654,6 +654,31 @@ public:
 };
 
 /**
+ * Represents a top-level native capability import.
+ */
+class ImportStmt final : public Stmt {
+private:
+    std::string module_name_;
+
+public:
+    /**
+     * Creates a native capability import.
+     *
+     * @param location Source location of the `inlaaje` keyword.
+     * @param module_name Name of the capability to load.
+     */
+    ImportStmt(SourceLocation location, std::string module_name)
+        : Stmt(location), module_name_(std::move(module_name)) {}
+
+    /**
+     * Returns the requested capability name.
+     *
+     * @return Capability name.
+     */
+    const std::string &module_name() const { return module_name_; }
+};
+
+/**
  * Represents a `zolang` loop statement.
  */
 class WhileStmt final : public Stmt {
