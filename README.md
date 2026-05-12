@@ -67,6 +67,13 @@ cmake -S . -B build
 cmake --build build
 ```
 
+## Development Builds
+
+Every successful push to the `develop` branch publishes a continuously updated
+unstable build at the
+[`develop-latest` prerelease](https://github.com/ifilot/plat-lang/releases/tag/develop-latest).
+Use tagged releases for stable versions.
+
 ## Run
 
 Execute a script:

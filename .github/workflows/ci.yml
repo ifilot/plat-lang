@@ -61,19 +61,24 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Prepare artifact
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         run: |
           mkdir -p dist
-          cp build/platlang dist/platlang-linux-x86_64
-          strip dist/platlang-linux-x86_64
-          chmod +x dist/platlang-linux-x86_64
+          if [ "${GITHUB_REF_NAME}" = "develop" ]; then
+            output="dist/platlang-develop-linux-x86_64"
+          else
+            output="dist/platlang-linux-x86_64"
+          fi
+          cp build/platlang "$output"
+          strip "$output"
+          chmod +x "$output"
 
       - name: Upload Linux artifact
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
           name: platlang-linux-x86_64
-          path: dist/platlang-linux-x86_64
+          path: dist/*
           if-no-files-found: error
 
   static-windows:
@@ -115,18 +120,23 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Prepare artifact
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         run: |
           mkdir -p dist
-          cp build/platlang.exe dist/platlang-windows-x86_64.exe
-          strip dist/platlang-windows-x86_64.exe
+          if [ "${GITHUB_REF_NAME}" = "develop" ]; then
+            output="dist/platlang-develop-windows-x86_64.exe"
+          else
+            output="dist/platlang-windows-x86_64.exe"
+          fi
+          cp build/platlang.exe "$output"
+          strip "$output"
 
       - name: Upload Windows artifact
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
           name: platlang-windows-x86_64
-          path: dist/platlang-windows-x86_64.exe
+          path: dist/*
           if-no-files-found: error
 
   release:
@@ -158,3 +168,61 @@ jobs:
             --repo "${GITHUB_REPOSITORY}" \
             --title "plat-lang ${GITHUB_REF_NAME}" \
             --notes "Release ${GITHUB_REF_NAME}"
+
+  develop-release:
+    name: Develop Release
+    runs-on: ubuntu-latest
+    needs:
+      - static-linux
+      - static-windows
+    if: github.ref == 'refs/heads/develop'
+    permissions:
+      contents: write
+    concurrency:
+      group: develop-release
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Move develop release tag
+        run: |
+          git tag -f develop-latest "${GITHUB_SHA}"
+          git push --force origin refs/tags/develop-latest
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Update GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Continuously updated development build from the develop branch.
+
+          Commit: ${GITHUB_SHA}
+
+          This is an unstable build for testing the latest changes. Use tagged releases for stable versions."
+
+          if gh release view develop-latest --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            gh release edit develop-latest \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "plat-lang develop" \
+              --notes "${notes}" \
+              --prerelease
+          else
+            gh release create develop-latest \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "plat-lang develop" \
+              --notes "${notes}" \
+              --prerelease \
+              --target "${GITHUB_SHA}"
+          fi
+
+          gh release upload develop-latest \
+            dist/platlang-linux-x86_64/platlang-develop-linux-x86_64 \
+            dist/platlang-windows-x86_64/platlang-develop-windows-x86_64.exe \
+            --repo "${GITHUB_REPOSITORY}" \
+            --clobber

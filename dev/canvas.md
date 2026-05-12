@@ -286,25 +286,277 @@ or:
 canvas support is not installed
 ```
 
-The recommended implementation path is phased:
+## Implementation Steps
+
+The recommended implementation path should keep the interpreter changes small
+and make the GUI backend the last part of the first milestone, not the first.
+
+### Step 1: Extract built-ins into a registry
+
+Move the current protected built-ins out of the interpreter and into a small
+`src/builtins/` subsystem:
 
 ```text
-Phase 1
-  Add a built-in registry in core.
-  Put canvas code in a separate CMake library target.
-  Link it normally during development.
-  Keep all SDL headers and SDL lifecycle code out of the interpreter.
-
-Phase 2
-  Add a native capability loader.
-  Build canvas as platlang_canvas_sdl.dll / libplatlang_canvas_sdl.so.
-  Load it from a capabilities directory.
-  Keep Space Mono embedded inside the canvas library.
-
-Phase 3
-  Add source/library modules for `plat-lang` files only when the language and
-  standard library need a user-facing import mechanism.
+src/
+  builtins/
+    builtin_registry.h
+    builtin_registry.cpp
+    core_builtins.h
+    core_builtins.cpp
 ```
+
+The first version of the registry should preserve the existing behavior of
+`aafdrokke`, `aafdrökke`, `invuier`, and `waatis`. This step should not add
+canvas behavior yet. Its goal is to make built-ins pluggable while keeping
+existing e2e tests green.
+
+### Step 2: Add a native handle value
+
+Extend the runtime `Value` model so built-ins can return opaque host-backed
+handles. Canvas handles should not be modeled as numbers or tables. They should
+have identity semantics, a stable debug string, and a localized type name for
+`waatis`.
+
+This gives `canvas(...)` a real return value without exposing SDL or backend
+objects directly to user programs.
+
+### Step 3: Define the canvas backend interface
+
+Add the canvas subsystem without linking SDL:
+
+```text
+src/
+  canvas/
+    canvas_backend.h
+    canvas_service.h
+    canvas_service.cpp
+```
+
+The backend interface should describe the chosen first-version behavior:
+
+```text
+create(width, height, title)
+clear(canvas, color)
+present(canvas)
+close(canvas)
+wait_until_closed(canvas)
+pause(canvas, milliseconds)
+is_open(canvas)
+line(canvas, x1, y1, x2, y2, options)
+rect(canvas, x, y, width, height, options)
+circle(canvas, x, y, radius, options)
+text(canvas, x, y, text, options)
+```
+
+The service can enforce one active canvas in the first implementation. It
+should also own the "canvas support is not available in this build" error path
+for builds without a real backend.
+
+### Step 4: Implement a recording backend
+
+Add `RecordingCanvasBackend` before the SDL backend:
+
+```text
+src/
+  canvas/
+    recording_canvas_backend.h
+    recording_canvas_backend.cpp
+```
+
+This backend should store structured operations in memory. Unit tests can then
+verify argument conversion, option parsing, strict unknown-key errors, color
+parsing, and operation order without opening a GUI window.
+
+### Step 5: Register canvas built-ins
+
+Add the canvas built-in module:
+
+```text
+src/
+  builtins/
+    canvas_builtins.h
+    canvas_builtins.cpp
+```
+
+The final user-facing names should be Limburgish. English names can remain in
+design notes or temporary development-only aliases, but they should not become
+the committed public API unless that decision is made explicitly.
+
+The built-ins should validate:
+
+- arity
+- canvas-handle arguments
+- numeric coordinates and sizes
+- string colors and titles
+- optional `portefeuil` option tables
+- unknown option keys as runtime errors
+
+At the end of this step, canvas calls can be fully tested through the recording
+backend.
+
+### Step 6: Add build configuration
+
+Add CMake targets and options for canvas support:
+
+```text
+PLATLANG_ENABLE_CANVAS
+PLATLANG_ENABLE_SDL_CANVAS
+```
+
+The canvas core and recording backend can build everywhere. The SDL backend
+should be compiled only when SDL2 and SDL_ttf are available and the flag is
+enabled.
+
+During this phase, the canvas implementation may still be linked normally into
+the interpreter for development. SDL headers and SDL lifecycle code must remain
+outside the interpreter.
+
+### Step 7: Implement the SDL backend
+
+Add the real windowing backend:
+
+```text
+src/
+  canvas/
+    sdl_canvas_backend.h
+    sdl_canvas_backend.cpp
+```
+
+The SDL backend should:
+
+- initialize SDL lazily on the first canvas operation that needs it
+- create and show the window immediately when `canvas(...)` is called
+- keep drawing buffered until the explicit present built-in
+- keep the window responsive during wait and pause operations
+- support one active canvas for the first version
+- report clear runtime errors for closed or invalid canvases
+
+Primitive support should include clear, line, rectangle, circle, and text.
+Circles can use a small local rasterization helper rather than an additional
+dependency.
+
+### Step 8: Parse colors and drawing options
+
+Centralize option parsing in the canvas subsystem. The first version should
+support predefined color names and hex strings such as `"#ff0000"`.
+
+Initial option keys:
+
+```text
+fill
+stroke
+color
+width
+size
+```
+
+Unknown keys should fail loudly. Missing options should use simple defaults
+that make each primitive visible.
+
+### Step 9: Embed Space Mono
+
+Add Space Mono as the default text font:
+
+```text
+third_party/fonts/space_mono/
+  SpaceMono-Regular.ttf
+  OFL.txt
+
+generated/
+  space_mono_regular_ttf.h
+  space_mono_regular_ttf.cpp
+```
+
+A build step should generate the C++ byte array. The SDL backend should load
+the font from memory with SDL_ttf so `canvas_text` works without requiring a
+font path from the user.
+
+### Step 10: Add tests and examples
+
+Add focused unit tests for:
+
+- built-in registry lookup and protected names
+- native handle values
+- canvas arity and type errors
+- strict option parsing
+- color parsing
+- recording backend operation order
+
+Add e2e tests for disabled-canvas diagnostics and basic canvas call failures.
+GUI behavior can be tested manually at first, with an opt-in SDL smoke test
+later.
+
+### Step 11: Split canvas into a native capability module
+
+Once the linked implementation is stable, add the native capability ABI and
+loader:
+
+```cpp
+struct PlatlangCapabilityApi {
+    uint32_t abi_version;
+    const char *name;
+    void (*register_builtins)(PlatlangHostApi *host);
+    void (*shutdown)();
+};
+
+extern "C" PLATLANG_EXPORT PlatlangCapabilityApi *
+platlang_capability_init(uint32_t host_abi_version);
+```
+
+Build canvas as:
+
+```text
+platlang_canvas_sdl.dll
+libplatlang_canvas_sdl.so
+libplatlang_canvas_sdl.dylib
+```
+
+Load it from a `capabilities/canvas_sdl/` directory using a manifest. This
+phase should produce clear diagnostics for missing and ABI-incompatible canvas
+support.
+
+### Step 12: Add an optional continuously updated develop release
+
+Add a CI release channel that publishes a fresh downloadable build whenever a
+commit lands on the `develop` branch. This should be treated as an unstable
+developer build, not as the stable release line.
+
+A possible shape:
+
+```text
+develop branch commit
+  -> CI builds platlang for supported platforms
+  -> CI packages the executable and native capabilities
+  -> CI updates a moving "develop" release or build artifact
+  -> users can download the latest development build
+```
+
+The package should include everything needed to try canvas out of the box:
+
+```text
+platlang
+capabilities/
+  canvas_sdl/
+    manifest.json
+    platlang_canvas_sdl.dll / libplatlang_canvas_sdl.so / libplatlang_canvas_sdl.dylib
+    SDL runtime files when needed
+```
+
+The CI job should make the channel clearly identifiable:
+
+- version output should include the branch and commit hash
+- download names should include `develop` and the target platform
+- documentation should call it unstable and suitable for testing
+- stable tagged releases should remain separate from the moving develop build
+
+This gives users an easy way to try the newest canvas work without waiting for
+a formal versioned release.
+
+### Step 13: Defer source modules
+
+Do not add source-level import syntax for canvas yet. Canvas should remain a
+host capability until the language and standard library need user-facing source
+modules.
 
 The key principle is: canvas is a host capability, not a language module yet.
 This gives clean packaging and optional native features without prematurely
