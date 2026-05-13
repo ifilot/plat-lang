@@ -194,7 +194,7 @@ void AstPrinter::print_expr(const Expr &expr) {
     }
 
     if (const auto *node = dynamic_cast<const BoolExpr *>(&expr)) {
-        print_line(std::string("BoolExpr value=") + (node->value() ? "woar" : "neetwoar"));
+        print_line(std::string("BoolExpr value=") + (node->value() ? "woar" : "kwatsj"));
         print_location(node->location());
         *stream_ << '\n';
         return;

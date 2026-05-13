@@ -55,7 +55,7 @@ std::shared_ptr<const std::unordered_set<std::string>> make_protected_names(
     const BuiltinRegistry &builtins) {
     std::unordered_set<std::string> names{
         "aafbraeke", "angesj", "enj", "es", "funksie", "inlaaje", "loat",
-        "portefeuil", "neetwoar", "niks", std::string(kNumberTypeAscii),
+        "tabel", "kwatsj", "niks", std::string(kNumberTypeAscii),
         std::string(kNumberTypeComposed), std::string(kNumberTypeDecomposed),
         "teks", "trok", "veur", "euversjlaon", "woar", "zolang"};
 

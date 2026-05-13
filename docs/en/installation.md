@@ -29,7 +29,7 @@ Read one line from standard input:
 
 ```platlang
 aafdrökke("What is your name?")
-loat name = invuier()
+loat name = inveure()
 aafdrökke("hoi " + name)
 ```
 

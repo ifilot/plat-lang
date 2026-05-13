@@ -4,6 +4,7 @@ project(platlang LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 enable_testing()
 
 option(PLATLANG_ENABLE_CANVAS "Build canvas host-capability support" ON)
@@ -11,6 +12,7 @@ option(PLATLANG_ENABLE_SDL_CANVAS "Build SDL2 canvas backend" OFF)
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_package(PkgConfig)
 
 BISON_TARGET(
@@ -29,7 +31,7 @@ FLEX_TARGET(
 
 ADD_FLEX_BISON_DEPENDENCY(PlatLangLexer PlatLangParser)
 
-add_library(platlang_core
+add_library(platlang_core SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ast_printer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/builtins/builtin_registry.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/builtins/canvas_builtins.cpp
@@ -47,6 +49,12 @@ target_compile_definitions(platlang_core PUBLIC
   PLATLANG_ENABLE_CANVAS=$<BOOL:${PLATLANG_ENABLE_CANVAS}>
   PLATLANG_ENABLE_SDL_CANVAS=$<BOOL:${PLATLANG_ENABLE_SDL_CANVAS}>
 )
+
+target_link_libraries(platlang_core PRIVATE ${CMAKE_DL_LIBS})
+
+if(WIN32)
+  set_target_properties(platlang_core PROPERTIES PREFIX "")
+endif()
 
 if(PLATLANG_ENABLE_SDL_CANVAS)
   if(NOT PkgConfig_FOUND)
@@ -92,15 +100,69 @@ if(PLATLANG_ENABLE_SDL_CANVAS)
     endif()
   endif()
 
-  target_sources(platlang_core PRIVATE
+  add_library(platlang_canvas_sdl SHARED
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/capabilities/canvas_sdl_module.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/canvas/sdl_canvas_backend.cpp
   )
-  target_compile_definitions(platlang_core PRIVATE SDL_MAIN_HANDLED)
-  target_link_libraries(platlang_core PUBLIC PkgConfig::SDL2)
+  target_compile_definitions(platlang_canvas_sdl PRIVATE SDL_MAIN_HANDLED)
+  target_include_directories(platlang_canvas_sdl PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+  )
+  target_link_libraries(platlang_canvas_sdl PRIVATE platlang_core PkgConfig::SDL2)
+  set_target_properties(platlang_canvas_sdl PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/capabilities/canvas
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/capabilities/canvas
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/capabilities/canvas
+    BUILD_RPATH "$ORIGIN;$ORIGIN/../../lib;$ORIGIN/../.."
+    INSTALL_RPATH "$ORIGIN;$ORIGIN/../../lib;$ORIGIN/../.."
+  )
+  if(WIN32)
+    set_target_properties(platlang_canvas_sdl PROPERTIES PREFIX "")
+  endif()
 endif()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/capabilities
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+set(PLATLANG_CANVAS_LIBRARY "builtin:canvas")
+if(PLATLANG_ENABLE_SDL_CANVAS)
+  if(WIN32)
+    set(PLATLANG_CANVAS_LIBRARY "platlang_canvas_sdl.dll")
+  elseif(APPLE)
+    set(PLATLANG_CANVAS_LIBRARY "libplatlang_canvas_sdl.dylib")
+  else()
+    set(PLATLANG_CANVAS_LIBRARY "libplatlang_canvas_sdl.so")
+  endif()
+endif()
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/capabilities/canvas/manifest.json.in
+  ${CMAKE_CURRENT_BINARY_DIR}/capabilities/canvas/manifest.json
+  @ONLY
+)
+
+set(PLATLANG_KEYWORDS_JSON
+    ${CMAKE_CURRENT_BINARY_DIR}/platlang_keywords.json)
+
+add_custom_command(
+  OUTPUT ${PLATLANG_KEYWORDS_JSON}
+  COMMAND
+    ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/dev/list_keywords.py
+    --format json
+    --output ${PLATLANG_KEYWORDS_JSON}
+  DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/dev/list_keywords.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platlang_lexer.l
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/interpreter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/builtins/core_builtins.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/builtins/canvas_builtins.cpp
+  COMMENT "Generating plat-lang keyword metadata"
+  VERBATIM
+)
+
+add_custom_target(platlang_keywords ALL
+  DEPENDS ${PLATLANG_KEYWORDS_JSON}
+)
 
 target_include_directories(platlang_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src

@@ -80,18 +80,22 @@ jobs:
           package_dir="dist/${package_name}"
           mkdir -p "${package_dir}/bin" "${package_dir}/lib"
           cp build/platlang "${package_dir}/bin/platlang"
+          cp build/libplatlang_core.so "${package_dir}/lib/"
+          cp build/platlang_keywords.json "${package_dir}/platlang_keywords.json"
           cp -R build/capabilities "${package_dir}/capabilities"
 
-          sdl_lib="$(ldd "${package_dir}/bin/platlang" | awk '/libSDL2-2.0.so/ { print $3; exit }')"
+          canvas_module="${package_dir}/capabilities/canvas/libplatlang_canvas_sdl.so"
+          sdl_lib="$(LD_LIBRARY_PATH="${package_dir}/lib" ldd "${canvas_module}" | awk '/libSDL2-2.0.so/ { print $3; exit }')"
           if [ -z "${sdl_lib}" ] || [ ! -f "${sdl_lib}" ]; then
             echo "could not find linked SDL2 runtime with ldd" >&2
-            ldd "${package_dir}/bin/platlang" >&2
+            LD_LIBRARY_PATH="${package_dir}/lib" ldd "${canvas_module}" >&2
             exit 1
           fi
-          cp "${sdl_lib}" "${package_dir}/lib/"
+          cp "${sdl_lib}" "${package_dir}/capabilities/canvas/"
 
           patchelf --set-rpath '$ORIGIN/../lib' "${package_dir}/bin/platlang"
-          strip "${package_dir}/bin/platlang" "${package_dir}/lib/"*.so*
+          patchelf --set-rpath '$ORIGIN:$ORIGIN/../../lib' "${canvas_module}"
+          strip "${package_dir}/bin/platlang" "${package_dir}/lib/"*.so* "${package_dir}/capabilities/canvas/"*.so*
           chmod +x "${package_dir}/bin/platlang"
 
           LD_LIBRARY_PATH="${package_dir}/lib" ldd "${package_dir}/bin/platlang" | tee "${package_dir}/ldd.txt"
@@ -102,7 +106,7 @@ jobs:
 
           while IFS= read -r library; do
             LD_LIBRARY_PATH="${package_dir}/lib" ldd "${library}" | tee -a "${package_dir}/ldd.txt"
-          done < <(find "${package_dir}/lib" -type f -name '*.so*')
+          done < <(find "${package_dir}/lib" "${package_dir}/capabilities" -type f -name '*.so*')
 
           if grep -q "not found" "${package_dir}/ldd.txt"; then
             echo "bundled shared library has missing dependencies" >&2
@@ -175,6 +179,8 @@ jobs:
           package_dir="dist/${package_name}"
           mkdir -p "${package_dir}"
           cp build/platlang.exe "${package_dir}/platlang.exe"
+          cp build/platlang_core.dll "${package_dir}/platlang_core.dll"
+          cp build/platlang_keywords.json "${package_dir}/platlang_keywords.json"
           cp -R build/capabilities "${package_dir}/capabilities"
 
           ldd "${package_dir}/platlang.exe" | tee "${package_dir}/ldd.txt"
@@ -188,6 +194,20 @@ jobs:
             | sort -u \
             | while IFS= read -r dependency; do
                 cp "${dependency}" "${package_dir}/"
+              done
+
+          canvas_module="${package_dir}/capabilities/canvas/platlang_canvas_sdl.dll"
+          ldd "${canvas_module}" | tee -a "${package_dir}/ldd.txt"
+          if grep -q "not found" "${package_dir}/ldd.txt"; then
+            echo "canvas capability has missing shared library dependencies" >&2
+            exit 1
+          fi
+
+          ldd "${canvas_module}" \
+            | awk '/\/ucrt64\/.*SDL2.*\.dll/ { print $3 }' \
+            | sort -u \
+            | while IFS= read -r dependency; do
+                cp "${dependency}" "${package_dir}/capabilities/canvas/"
               done
 
           strip "${package_dir}/platlang.exe" || true

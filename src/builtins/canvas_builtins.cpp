@@ -52,7 +52,7 @@ std::string value_kind(const Value &value) {
         return "teks";
     }
     if (value.is_table()) {
-        return "portefeuil";
+        return "tabel";
     }
     if (value.is_native_handle()) {
         return value.as_native_handle()->type_name();
@@ -253,7 +253,7 @@ CanvasDrawOptions parse_options(BuiltinContext &context, const Value *value,
     if (!value->is_table()) {
         runtime_error(context.diagnostics(), location,
                       "function '" + name +
-                          "' options argument must be a portefeuil");
+                          "' options argument must be a tabel");
     }
 
     for (const auto &[key, entry] : value->as_table()->entries()) {

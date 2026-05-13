@@ -67,8 +67,8 @@ angesj:
 enj
 ```
 
-Truthiness haudt vroege programma's compact: `niks`, `neetwoar`, `0`, lege
-tekst, en lege portefeuils zeen falsy; alle angere waerdes zeen truthy.
+Truthiness haudt vroege programma's compact: `niks`, `kwatsj`, `0`, lege
+tekst, en lege tabels zeen falsy; alle angere waerdes zeen truthy.
 
 ## 4. Waerk Herhaole Mit Lusse
 
@@ -136,9 +136,9 @@ enj
 aafdrokke(viefkes(10))
 ```
 
-## 6. Data Groepere Mit `portefeuil`-Tabellen
+## 6. Data Groepere Mit `tabel`-Tabellen
 
-`portefeuil`-tabellen zeen veranderbare containers. Te kins ze gebroeke es
+`tabel`-tabellen zeen veranderbare containers. Te kins ze gebroeke es
 records:
 
 ```platlang
@@ -171,12 +171,12 @@ aafdrokke(gebroeker[veld])
 
 ## 7. Invoer Laeze
 
-De minimale standaardbibliotheek bevat ouch `invuier()`, dat ein regel invoer
+De minimale standaardbibliotheek bevat ouch `inveure()`, dat ein regel invoer
 laes es `teks`.
 
 ```platlang
 aafdrokke("Wie heits te?")
-loat naam = invuier()
+loat naam = inveure()
 aafdrokke("hoi " + naam)
 ```
 

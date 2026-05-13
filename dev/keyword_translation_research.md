@@ -29,9 +29,9 @@ or built-in name:
 
 ```text
 loat funksie es angesj zolang veur enj trok aafbraeke euversjlaon
-niks woar neetwoar en of
-nómmer nommer teks portefeuil
-aafdrokke aafdrökke invuier
+niks woar kwatsj en of
+nómmer nommer teks tabel
+aafdrokke aafdrökke inveure
 ```
 
 ## Reading the Evidence
@@ -64,21 +64,21 @@ dictionary-backed form uses diacritics.
 | continue | `euversjlaon` | Strong for the loop-control sense. Dutch `overslaan` gives `euversjlaon` for Roermond and Sittard, matching the programming behavior: skip the rest of this iteration. Dutch `doorgaan` gives `doorgaon`, but that better means continuing onward rather than skipping. | Use `euversjlaon`. It is long, but semantically sharp and dictionary-backed. |
 | nil / null | `niks` | Medium. Dutch `niets` and `niks` mainly return `geinein` / `genein`, but `LI-NL niks` exists and related compounds carry "nothing/useless/trivial" senses. | Keep `niks`; it is compact and recognizable. |
 | true | `woar` | Medium. `LI-NL woar` confirms the true/correct sense in Valkenburg. Dutch `waarheid` and `LI-NL waor` show broader support for `waor` in Roermond, Sittard, and Venlo. | Keep `woar` for compatibility. Consider `waor` as a future alias or replacement if we want stronger Roermond/Sittard backing. |
-| false | `neetwoar` | Weak as a dictionary lookup. `LI-NL neetwoar` returned no direct hit. Dutch `nietwaar` returns an interjection sense such as Roermond `neewaor`, not boolean false. | Keep as transparent composition of `neet` + `woar`. If `waor` becomes an alias, consider `neetwaor` too. |
+| false | `kwatsj` | Weak as a dictionary lookup. `LI-NL kwatsj` returned no direct hit. Dutch `nietwaar` returns an interjection sense such as Roermond `neewaor`, not boolean false. | Keep as transparent composition of `neet` + `woar`. If `waor` becomes an alias, consider `neetwaor` too. |
 | logical AND | `en` | Strong. Dutch `en` returns `en` as a coordinating conjunction across Maastricht, Roermond, Sittard, Valkenburg, and Venlo. | Keep `en`. |
 | logical OR | `of` | Medium. `LI-NL of` returns conjunction entries, but several meanings are "as if/although"; Dutch `of` search returns `es-of` / `as-of` and many unrelated `offer...` hits. The plain spelling is still the expected Dutch/Limburgish operator word. | Keep `of`. |
 | number type | `nómmer` / `nommer` | Strong. Dutch `nummer` returns `nómmer` for Maastricht, Roermond, Sittard, and Valkenburg. `LI-NL nommer` and `LI-NL nómmer` normalize to the same entries. | Keep `nómmer` as the dialect-correct spelling and `nommer` as the ASCII alias. |
 | text type | `teks` | Strong. Dutch `tekst` returns `teks` for Maastricht, Roermond, Sittard, and Valkenburg. `LI-NL teks` confirms text-related meanings across the same dialects. | Keep `teks`. |
-| composite table type | `portefeuil` | Strong for the intended map/folder metaphor. `LI-NL portefeuil` confirms "map voor papieren" for Maastricht, Roermond, Sittard, and Valkenburg. Dutch `map` also returns `portefeuil` for the same dialects. | Use `portefeuil` as the composite runtime type name. |
+| composite table type | `tabel` | Strong for the intended map/folder metaphor. `LI-NL tabel` confirms "map voor papieren" for Maastricht, Roermond, Sittard, and Valkenburg. Dutch `map` also returns `tabel` for the same dialects. | Use `tabel` as the composite runtime type name. |
 | print built-in | `aafdrokke` / `aafdrökke` | Strong. Dutch `afdrukken` returns Maastricht `aofdrökke` and `aafdrökke` for Roermond, Sittard, Valkenburg, and Venlo. `LI-NL aafdrokke` normalizes to `aafdrökke`. | Keep both spellings. The diacritic form is dictionary-backed; the ASCII form is ergonomic. |
-| input built-in | `invuier` | Medium. `LI-NL invuier` confirms a Sittard noun meaning "invoer/import". Dutch `invoeren` returns Sittard `invuiere`; Roermond and Venlo use `inveure`. For "invoeren in een computer", the dictionary gives `inleze` / `inlaeze`. | Keep `invuier` for now as a Sittard-centered input name. Consider `inlaeze` / `inleze` if the built-in is reframed as reading from input rather than input/import. |
+| input built-in | `inveure` | Medium. `LI-NL inveure` confirms a Sittard noun meaning "invoer/import". Dutch `invoeren` returns Sittard `inveuree`; Roermond and Venlo use `inveure`. For "invoeren in een computer", the dictionary gives `inleze` / `inlaeze`. | Keep `inveure` for now as a Sittard-centered input name. Consider `inlaeze` / `inleze` if the built-in is reframed as reading from input rather than input/import. |
 
 ## Future or Related Names
 
 | Concept | Candidate | Evidence | Note |
 | ------- | --------- | -------- | ---- |
 | map / folder value | `map` | Medium. Dutch `map` returns `map` for Maastricht, Roermond, Valkenburg, and Venlo, but not Sittard in the sampled result. | Short and obvious, but less distinctive. |
-| table value | `taofel` | Strong as "tabel/table", returned across all listed dialects. | Dictionary-backed, but less accurate than `portefeuil` for the map/folder metaphor. |
+| table value | `taofel` | Strong as "tabel/table", returned across all listed dialects. | Dictionary-backed, but less accurate than `tabel` for the map/folder metaphor. |
 | continue/go on | `doorgaon` | Strong for `doorgaan` in Roermond, Sittard, and Venlo. | Useful if the language ever needs a plain "continue onward" word, but not as precise for loop `continue`. |
 | true | `waor` | Stronger dialect coverage than `woar` for true/correct. | Candidate alias if boolean names get dialect aliases. |
 
@@ -87,7 +87,7 @@ dictionary-backed form uses diacritics.
 The current spelling set is usable, but two names deserve an explicit design
 decision before the language is called stable:
 
-1. `woar` / `neetwoar`: decide whether to keep Valkenburg-centered `woar` or add
+1. `woar` / `kwatsj`: decide whether to keep Valkenburg-centered `woar` or add
    Roermond/Sittard-backed `waor` and `neetwaor` aliases.
 2. `loat` and `funksie`: keep them as programming-language borrowings, but avoid
    presenting them as dictionary-confirmed Limburgish words.

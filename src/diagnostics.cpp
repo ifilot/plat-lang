@@ -79,7 +79,7 @@ constexpr DiagnosticTemplate kLimburgishDiagnostics[] = {
     {DiagnosticId::UndeclaredVariable, "variabele '{name}' is neet gedeclareerd"},
     {DiagnosticId::RedeclaredName, "naam '{name}' is al gedefinieerd"},
     {DiagnosticId::ProtectedName, "naam '{name}' is besjermd en kin neet opnieuw gedefinieerd waere"},
-    {DiagnosticId::InvalidTableKey, "portefeuil-sjleutel moot eine teks of nómmer zien"},
+    {DiagnosticId::InvalidTableKey, "tabel-sjleutel moot eine teks of nómmer zien"},
     {DiagnosticId::UnknownFunction, "onbekende funksie '{name}'"},
     {DiagnosticId::ArityMismatch,
      "funksie '{name}' verwach {expected} argument(en), mer kreeg {actual}"},

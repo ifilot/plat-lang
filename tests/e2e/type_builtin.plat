@@ -2,10 +2,10 @@ loat tekst = "hoi"
 loat getal = 42
 loat vlag = woar
 loat leegte = niks
-loat tabel = { naam = "plat", }
+loat gegevens = { naam = "plat", }
 
 waatis(tekst)
 waatis(getal)
 waatis(vlag)
 waatis(leegte)
-waatis(tabel)
+waatis(gegevens)

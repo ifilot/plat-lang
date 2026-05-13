@@ -7,8 +7,8 @@ wat hie neet geneump weurt, huurt nog neet bie de vaste taol.
 
 De huidige taol bevat primitieve waerdes, variabelen, lexicale scopes,
 expressies, globale funksies, veurwaerde, lusse, veranderbare
-`portefeuil`-tabellen, gelokaliseerde meldinge, en ein minimale
-standaardbibliotheek: `aafdrokke` / `aafdrökke`, `invuier`, en `waatis`.
+`tabel`-tabellen, gelokaliseerde meldinge, en ein minimale
+standaardbibliotheek: `aafdrokke` / `aafdrökke`, `inveure`, en `waatis`.
 
 ## Waerdes
 
@@ -19,9 +19,9 @@ De runtime-waerdes zeen:
 | `nómmer` / `nommer` | IEEE 754 double-precision nómmer |
 | `teks` | tekst |
 | `woar` | boolean woar |
-| `neetwoar` | boolean neet woar |
+| `kwatsj` | boolean neet woar |
 | `niks` | gein waerde |
-| `portefeuil` | veranderbare tabel |
+| `tabel` | veranderbare tabel |
 
 `waatis(value)` drukt deze runtime-typename aaf veur bestaande waerdes.
 
@@ -36,7 +36,7 @@ loat actief = woar
 loat nikske = niks
 ```
 
-`niks`, `neetwoar`, `0`, eine lege tekst, en ein leeg portefeuil zeen falsy. Alle
+`niks`, `kwatsj`, `0`, eine lege tekst, en ein leeg tabel zeen falsy. Alle
 angere waerdes zeen truthy.
 
 ## Variabelen
@@ -62,7 +62,7 @@ Gebroek `waatis()` es te 't type van ein variabele wils bekieke.
 ## Expressies
 
 De huidige taol ondersteunt literals, variabelen, haakjes, unaire en binaire
-operators, funksie-aanrope, en toegang tot portefeuils.
+operators, funksie-aanrope, en toegang tot tabels.
 
 ```platlang
 loat resultaat = (2 + 3) * 4
@@ -101,7 +101,7 @@ Dao door kin ein funksie ein angere funksie aanrope die later in 't besjtand
 staon. Mutueel recursieve globale funksies waerke ouch.
 
 Ein `funksie` binne ein blok is ein syntaxfout. Funksies zeen gein waerdes: se
-kinne neet in variabelen, argumente, returnwaerdes, of portefeuils gezat waere.
+kinne neet in variabelen, argumente, returnwaerdes, of tabels gezat waere.
 
 Ein funksie aanrope mit 't verkeerde aantal argumente is ein fout. Es ein
 funksie tot aan 't inj kump zonder `trok`, geuf ze `niks` truuk. `trok` zonder
@@ -123,7 +123,7 @@ Elke tak haet eine eige lexicale scope.
 
 ## Portefeuils
 
-`portefeuil` is de eine samengestelde waerde. Portefeuils zeen veranderbaar en kinne
+`tabel` is de eine samengestelde waerde. Portefeuils zeen veranderbaar en kinne
 diene es reeks, kaart, record, of naamruimte.
 
 ```platlang
@@ -153,7 +153,7 @@ loat gebroeker = {
 }
 ```
 
-Toegang via ein portefeuil kin ouch toewieze:
+Toegang via ein tabel kin ouch toewieze:
 
 ```platlang
 gebroeker.naam = "Mia"
@@ -161,7 +161,7 @@ nommers[1] = 99
 ```
 
 Ein missende sjleutel geuf `niks`. Portefeuils vergelijke op identiteit: twee
-versjillende portefeuils mit dezelfde inhoud zeen neet geliek.
+versjillende tabels mit dezelfde inhoud zeen neet geliek.
 
 ## Lusse
 
@@ -194,12 +194,12 @@ De standaardbibliotheek haet bewust allein ein klein aantal funksies.
 | Funksie | Gedrag |
 | ------- | ------ |
 | `aafdrokke(value)`, `aafdrökke(value)` | Drukt `value` aaf mit ein newline en geuf `niks` truuk. |
-| `invuier()` | Lees eine regel invoer es `teks`; geuf `niks` bie end-of-input. |
+| `inveure()` | Lees eine regel invoer es `teks`; geuf `niks` bie end-of-input. |
 | `waatis(value)` | Drukt de runtime-typenaam van `value` aaf en geuf `niks` truuk. |
 
 ```platlang
 aafdrökke("Wie heits te?")
-loat naam = invuier()
+loat naam = inveure()
 aafdrökke("hoi " + naam)
 ```
 

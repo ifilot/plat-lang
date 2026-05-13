@@ -3,18 +3,34 @@
 #include "builtins/canvas_builtins.h"
 #include "canvas/canvas_service.h"
 #include "canvas/recording_canvas_backend.h"
-#if PLATLANG_ENABLE_SDL_CANVAS
-#include "canvas/sdl_canvas_backend.h"
-#endif
 
 #include <cctype>
 #include <fstream>
+#include <memory>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+
 namespace plat {
+
+struct CapabilityLoader::NativeLibrary {
+#ifdef _WIN32
+    HMODULE handle = nullptr;
+#else
+    void *handle = nullptr;
+#endif
+};
+
 namespace {
 
 constexpr int kCapabilityAbiVersion = 1;
@@ -242,6 +258,40 @@ bool contains_name(const std::vector<std::string> &names,
     return false;
 }
 
+std::string native_library_error() {
+#ifdef _WIN32
+    const DWORD code = GetLastError();
+    if (code == 0) {
+        return "unknown native loader error";
+    }
+
+    LPSTR message = nullptr;
+    const DWORD size = FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        reinterpret_cast<LPSTR>(&message), 0, nullptr);
+
+    if (size == 0 || message == nullptr) {
+        return "native loader error " + std::to_string(code);
+    }
+
+    std::string result(message, size);
+    LocalFree(message);
+    while (!result.empty() &&
+           (result.back() == '\n' || result.back() == '\r')) {
+        result.pop_back();
+    }
+    return result;
+#else
+    const char *error = dlerror();
+    if (error == nullptr) {
+        return "unknown native loader error";
+    }
+    return error;
+#endif
+}
+
 std::string slurp(const std::filesystem::path &path) {
     std::ifstream file(path);
     if (!file) {
@@ -341,29 +391,76 @@ void CapabilityLoader::register_manifest(const CapabilityManifest &manifest,
                                "' does not provide '" + requested + "'")});
     }
 
-    if (manifest.name == "canvas" || contains_name(manifest.provides, "canvas")) {
+    if (manifest.library == "builtin:canvas") {
         if (canvas_service_ == nullptr) {
-#if PLATLANG_ENABLE_SDL_CANVAS
-            canvas_service_ =
-                std::make_unique<CanvasService>(std::make_unique<SdlCanvasBackend>());
-#else
             canvas_service_ = std::make_unique<CanvasService>(
                 std::make_unique<RecordingCanvasBackend>());
-#endif
             register_canvas_builtins(registry, *canvas_service_);
         }
     } else {
-        diagnostics_->fatal(
-            DiagnosticId::RuntimeError, location,
-            {DiagnosticArg("message",
-                           "capability '" + requested +
-                               "' is installed but cannot be loaded by this build")});
+        load_native_library(manifest, requested, registry, location);
     }
 
     loaded_.insert(manifest.name);
     for (const std::string &provided : manifest.provides) {
         loaded_.insert(provided);
     }
+}
+
+void CapabilityLoader::load_native_library(const CapabilityManifest &manifest,
+                                           const std::string &requested,
+                                           BuiltinRegistry &registry,
+                                           SourceLocation location) {
+    const std::filesystem::path library_path =
+        manifest.path.parent_path() / manifest.library;
+
+#ifdef _WIN32
+    HMODULE handle = LoadLibraryExA(library_path.string().c_str(), nullptr,
+                                    LOAD_WITH_ALTERED_SEARCH_PATH);
+    if (handle == nullptr) {
+#else
+    dlerror();
+    void *handle = dlopen(library_path.string().c_str(), RTLD_NOW | RTLD_LOCAL);
+    if (handle == nullptr) {
+#endif
+        diagnostics_->fatal(
+            DiagnosticId::RuntimeError, location,
+            {DiagnosticArg("message",
+                           "could not load capability '" + requested +
+                               "' library '" + library_path.string() +
+                               "': " + native_library_error())});
+    }
+
+    using RegisterCapability = bool (*)(BuiltinRegistry *);
+
+#ifdef _WIN32
+    auto register_capability = reinterpret_cast<RegisterCapability>(
+        GetProcAddress(handle, "platlang_register_capability_v1"));
+    if (register_capability == nullptr) {
+#else
+    dlerror();
+    auto register_capability = reinterpret_cast<RegisterCapability>(
+        dlsym(handle, "platlang_register_capability_v1"));
+    if (register_capability == nullptr) {
+#endif
+        diagnostics_->fatal(
+            DiagnosticId::RuntimeError, location,
+            {DiagnosticArg("message",
+                           "capability '" + requested + "' library '" +
+                               library_path.string() +
+                               "' does not export platlang_register_capability_v1: " +
+                               native_library_error())});
+    }
+
+    if (!register_capability(&registry)) {
+        diagnostics_->fatal(
+            DiagnosticId::RuntimeError, location,
+            {DiagnosticArg("message",
+                           "capability '" + requested +
+                               "' failed to register its built-ins")});
+    }
+
+    native_libraries_.push_back(NativeLibrary{handle});
 }
 
 } // namespace plat

@@ -31,7 +31,7 @@ aafdrokke(fib(10))
 ## Language Boundary
 
 The current language includes primitive values, variables, expressions,
-top-level global functions, conditionals, loops, mutable `portefeuil` tables,
+top-level global functions, conditionals, loops, mutable `tabel` tables,
 localized diagnostics, and a tiny standard library.
 
 The standard library currently contains only:
@@ -39,7 +39,7 @@ The standard library currently contains only:
 | Function | Purpose |
 | -------- | ------- |
 | `aafdrokke(value)`, `aafdrökke(value)` | Print one value followed by a newline. |
-| `invuier()` | Read one input line as text, or return `niks` at end of input. |
+| `inveure()` | Read one input line as text, or return `niks` at end of input. |
 | `waatis(value)` | Print the runtime type name of one value. |
 
 Modules, imports, classes, methods, exceptions, closures, first-class
@@ -105,6 +105,16 @@ build/platlang --lang li examples/li/fibonacci.plat
 ```sh
 ctest --test-dir build
 ```
+
+## Development Tools
+
+List lexer keywords, type words, and built-ins from the implementation source:
+
+```sh
+dev/list_keywords.py --format json
+```
+
+Release packages include the same data as `platlang_keywords.json`.
 
 ## Documentation
 

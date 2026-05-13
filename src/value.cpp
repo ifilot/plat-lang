@@ -99,7 +99,7 @@ std::string Value::to_string() const {
     }
 
     if (is_bool()) {
-        return as_bool() ? "woar" : "neetwoar";
+        return as_bool() ? "woar" : "kwatsj";
     }
 
     if (is_number()) {
@@ -114,7 +114,7 @@ std::string Value::to_string() const {
 
     if (is_table()) {
         std::ostringstream out;
-        out << "portefeuil@" << as_table().get();
+        out << "tabel@" << as_table().get();
         return out.str();
     }
 

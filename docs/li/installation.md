@@ -29,7 +29,7 @@ Lees eine regel van standaardinvoer:
 
 ```platlang
 aafdrökke("Wie heits te?")
-loat naam = invuier()
+loat naam = inveure()
 aafdrökke("hoi " + naam)
 ```
 

@@ -17,7 +17,7 @@ funksie contains_seven(number):
         trok woar
     enj
 
-    trok neetwoar
+    trok kwatsj
 enj
 
 funksie is_juf(number):
@@ -134,7 +134,7 @@ unnecessary candidates.
 ```platlang
 funksie is_prime(n):
     es n < 2:
-        trok neetwoar
+        trok kwatsj
     enj
 
     es n == 2:
@@ -142,13 +142,13 @@ funksie is_prime(n):
     enj
 
     es n % 2 == 0:
-        trok neetwoar
+        trok kwatsj
     enj
 
     loat divisor = 3
     zolang divisor * divisor <= n:
         es n % divisor == 0:
-            trok neetwoar
+            trok kwatsj
         enj
 
         divisor = divisor + 2
@@ -197,7 +197,7 @@ loat limit = 50
 loat is_composite = {}
 
 veur n = 0, limit + 1:
-    is_composite[n] = neetwoar
+    is_composite[n] = kwatsj
 enj
 
 loat p = 2
@@ -421,7 +421,7 @@ teks
 nómmer
 woar
 niks
-portefeuil
+tabel
 ```
 
 Tests use their own fixtures under `tests/`; examples are for readers.

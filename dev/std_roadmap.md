@@ -8,7 +8,7 @@ The current standard library contains only:
 | Function | Purpose |
 | -------- | ------- |
 | `aafdrokke(value)`, `aafdrökke(value)` | Prints a value followed by a newline. |
-| `invuier()` | Reads one input line as text, or returns `niks` at end of input. |
+| `inveure()` | Reads one input line as text, or returns `niks` at end of input. |
 
 Everything else in this document is proposed future behavior.
 
@@ -24,7 +24,7 @@ values pleasant to use:
 * `teks`
 * `woar`
 * `niks`
-* `portefeuil`
+* `tabel`
 
 Because functions are global declarations and are not runtime values, early
 standard library features should be plain global functions. The library should
@@ -36,7 +36,7 @@ that require first-class functions.
 The standard library should follow these rules:
 
 * Prefer a small set of composable functions over many specialized helpers.
-* Treat `portefeuil` as the universal composite value.
+* Treat `tabel` as the universal composite value.
 * Keep ASCII spellings available, while allowing dialect-correct aliases with
   diacritics where they improve the Limburgish spelling.
 * Prefer predictable behavior over clever shortcuts.
@@ -74,9 +74,9 @@ without adding new language syntax.
 * `teks`
 * `woar`
 * `niks`
-* `portefeuil`
+* `tabel`
 
-`lengde` and `leeg` should initially apply only to `teks` and `portefeuil`. Passing
+`lengde` and `leeg` should initially apply only to `teks` and `tabel`. Passing
 other values should be a runtime error unless a later design deliberately
 extends their behavior.
 

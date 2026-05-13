@@ -17,7 +17,7 @@ funksie bevat_zeve(getal):
         trok woar
     enj
 
-    trok neetwoar
+    trok kwatsj
 enj
 
 funksie is_juf(getal):
@@ -134,7 +134,7 @@ onnuedige kandidaote euversjleit.
 ```platlang
 funksie is_priem(getal):
     es getal < 2:
-        trok neetwoar
+        trok kwatsj
     enj
 
     es getal == 2:
@@ -142,13 +142,13 @@ funksie is_priem(getal):
     enj
 
     es getal % 2 == 0:
-        trok neetwoar
+        trok kwatsj
     enj
 
     loat deler = 3
     zolang deler * deler <= getal:
         es getal % deler == 0:
-            trok neetwoar
+            trok kwatsj
         enj
 
         deler = deler + 2
@@ -197,7 +197,7 @@ loat limiet = 50
 loat is_samengesteld = {}
 
 veur getal = 0, limiet + 1:
-    is_samengesteld[getal] = neetwoar
+    is_samengesteld[getal] = kwatsj
 enj
 
 loat priem = 2
@@ -247,7 +247,7 @@ Priemgetalle oet de zeef:
 ## Punte-samevatting
 
 Dit is ein klein data-verwerkend programma. 't Bewaart punte in ein
-portefeuil, rekent ein totaal oet, haudt de laegste en hoegste waerde bie, en
+tabel, rekent ein totaal oet, haudt de laegste en hoegste waerde bie, en
 deilt 't gemiddelde in.
 
 ```platlang
@@ -349,7 +349,7 @@ totaal: 47.19
 ## Viefkes mit geheuge
 
 Recursieve funksies zeen handig, mer gewone recursieve Fibonacci herhaolt väöl
-waerk. Ein portefeuil kin al berekende antwoorde vasthaaje.
+waerk. Ein tabel kin al berekende antwoorde vasthaaje.
 
 ```platlang
 loat geheuge = {
@@ -399,7 +399,7 @@ viefkes(15) = 610
 ## Runtime-Type bekieke
 
 `waatis(waerde)` is handig es data van versjillende plekke kump, of es eine
-missende portefeuil-sjleutel `niks` kin oplevere.
+missende tabel-sjleutel `niks` kin oplevere.
 
 ```platlang
 loat persoon = {
@@ -422,7 +422,7 @@ teks
 nómmer
 woar
 niks
-portefeuil
+tabel
 ```
 
 Tests höbbe eur eige fixtures ónger `tests/`; veurbeelde zeen veur lezers.

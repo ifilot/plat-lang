@@ -1,5 +1,5 @@
-# Ein `portefeuil` is de einige samengestelde waerde in plat-lang.
-# Detzelfde portefeuil kin diene es verzameling van naeme en waerde,
+# Ein `tabel` is de einige samengestelde waerde in plat-lang.
+# Detzelfde tabel kin diene es verzameling van naeme en waerde,
 # mer ouch es reeks dae bie nul begint.
 
 loat gebroeker = {

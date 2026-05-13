@@ -6,9 +6,9 @@ interpreter.
 ## Language Scope
 
 The current language includes primitive values, variables, lexical scopes,
-expressions, global functions, conditionals, loops, mutable `portefeuil` tables,
+expressions, global functions, conditionals, loops, mutable `tabel` tables,
 localized diagnostics, and a minimal standard library: `aafdrokke` /
-`aafdrökke`, `invuier`, and `waatis`.
+`aafdrökke`, `inveure`, and `waatis`.
 
 ## Values
 
@@ -19,9 +19,9 @@ The runtime value types are:
 | `nómmer` / `nommer` | IEEE 754 double-precision number |
 | `teks` | string |
 | `woar` | boolean true |
-| `neetwoar` | boolean false |
+| `kwatsj` | boolean false |
 | `niks` | absence of a value |
-| `portefeuil` | mutable table |
+| `tabel` | mutable table |
 
 `waatis(value)` prints these runtime type names for existing values.
 
@@ -38,7 +38,7 @@ loat missing = niks
 
 Truthiness:
 
-* `niks`, `neetwoar`, `0`, empty strings, and empty tables are falsy
+* `niks`, `kwatsj`, `0`, empty strings, and empty tables are falsy
 * all other values are truthy
 
 ## Variables
@@ -123,7 +123,7 @@ Every branch body introduces a lexical scope.
 
 ## Tables
 
-`portefeuil` is the only composite value. Tables are mutable and can act as arrays,
+`tabel` is the only composite value. Tables are mutable and can act as arrays,
 maps, records, or namespaces.
 
 ```platlang
@@ -193,12 +193,12 @@ iteration. Using either outside a loop is an error.
 | Function | Behavior |
 | -------- | -------- |
 | `aafdrokke(value)`, `aafdrökke(value)` | Prints `value` followed by a newline and returns `niks`. |
-| `invuier()` | Reads one line from input and returns it as `teks`; returns `niks` at end of input. |
+| `inveure()` | Reads one line from input and returns it as `teks`; returns `niks` at end of input. |
 | `waatis(value)` | Prints the runtime type name of `value` and returns `niks`. |
 
 ```platlang
 aafdrökke("What is your name?")
-loat naam = invuier()
+loat naam = inveure()
 aafdrökke("hoi " + naam)
 ```
 

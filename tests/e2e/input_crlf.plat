@@ -1,4 +1,4 @@
-loat first = invuier()
-loat second = invuier()
+loat first = inveure()
+loat second = inveure()
 aafdrokke(first)
 aafdrokke(second)

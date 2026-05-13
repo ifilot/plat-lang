@@ -49,7 +49,7 @@ aafdrokke(fib(10))
   </div>
   <div class="plat-card">
     <h3>Small Runtime</h3>
-    <p>Numbers, strings, booleans, <code>niks</code>, and mutable <code>portefeuil</code> tables form the core.</p>
+    <p>Numbers, strings, booleans, <code>niks</code>, and mutable <code>tabel</code> tables form the core.</p>
   </div>
   <div class="plat-card">
     <h3>Interpreted</h3>
@@ -60,11 +60,11 @@ aafdrokke(fib(10))
 ## At a glance
 
 The current language contains the core language only: primitive values,
-variables, expressions, global functions, conditionals, loops, mutable `portefeuil`
+variables, expressions, global functions, conditionals, loops, mutable `tabel`
 tables, and localized diagnostics.
 
 The standard library starts deliberately small with `aafdrokke(value)` /
-`aafdrökke(value)` for output, `invuier()` for input, and `waatis(value)` for
+`aafdrökke(value)` for output, `inveure()` for input, and `waatis(value)` for
 runtime type inspection. Modules, imports, classes, methods, exceptions,
 closures, first-class functions, static types, and the broader standard library
 are intentionally deferred.

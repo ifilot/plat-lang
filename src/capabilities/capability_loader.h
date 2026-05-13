@@ -29,10 +29,13 @@ struct CapabilityManifest {
  */
 class CapabilityLoader {
 private:
+    struct NativeLibrary;
+
     DiagnosticReporter *diagnostics_;
     std::vector<std::filesystem::path> search_paths_;
     std::unordered_set<std::string> loaded_;
     std::unique_ptr<CanvasService> canvas_service_;
+    std::vector<NativeLibrary> native_libraries_;
 
 public:
     CapabilityLoader(DiagnosticReporter &diagnostics,
@@ -51,6 +54,10 @@ private:
                            const std::string &requested,
                            BuiltinRegistry &registry,
                            SourceLocation location);
+    void load_native_library(const CapabilityManifest &manifest,
+                             const std::string &requested,
+                             BuiltinRegistry &registry,
+                             SourceLocation location);
 };
 
 } // namespace plat

@@ -59,7 +59,7 @@ broader future design.
 
 The behavior considered part of the current language is:
 
-* primitive values: `nómmer` / `nommer`, `teks`, `woar`, `neetwoar`, `niks`, and `portefeuil`
+* primitive values: `nómmer` / `nommer`, `teks`, `woar`, `kwatsj`, `niks`, and `tabel`
 * variable declarations with `loat`
 * lexical block scopes
 * expressions and the documented operator set
@@ -70,7 +70,7 @@ The behavior considered part of the current language is:
 * mutable tables with numeric and text keys
 * localized English and Limburgish diagnostics
 * command-line execution, `--version`, `--ast`, and `--lang`
-* the minimal standard library functions `aafdrokke(value)` / `aafdrökke(value)` and `invuier()`
+* the minimal standard library functions `aafdrokke(value)` / `aafdrökke(value)` and `inveure()`
 
 Anything outside that list should be read as future design direction unless a
 later release explicitly adopts it.
@@ -89,7 +89,7 @@ functions, closures, nested functions, and a larger standard library.
 | string   | `teks`                 |
 | boolean  | `woar`                 |
 | nil      | `niks`                 |
-| table    | `portefeuil`                |
+| table    | `tabel`                |
 
 These localized names are intended for runtime reflection and type inspection.
 Functions are global declarations rather than ordinary runtime values, so there
@@ -136,7 +136,7 @@ Division always produces a floating-point result.
 
 ## Tables
 
-`plat-lang` has one universal composite type: `portefeuil`.
+`plat-lang` has one universal composite type: `tabel`.
 
 Tables can act as:
 
@@ -307,7 +307,7 @@ enj
 
 funksie odd(n):
   es n == 0:
-    trok neetwoar
+    trok kwatsj
   angesj:
     trok even(n - 1)
   enj
@@ -403,12 +403,12 @@ Limburgian identity.
 | continue | `euversjlaon`  |
 | nil     | `niks`    |
 | true    | `woar`    |
-| false   | `neetwoar` |
+| false   | `kwatsj` |
 
 Keywords are reserved and cannot be used as variable names.
 
 The function definition keyword and runtime type name are both `funksie`.
-`aafdrokke`, `aafdrökke`, and `invuier` are standard library built-ins, not
+`aafdrokke`, `aafdrökke`, and `inveure` are standard library built-ins, not
 keywords.
 
 ## Limburgian Spelling and ASCII Identifiers
@@ -546,7 +546,7 @@ The current standard library is intentionally tiny. It contains only:
 | Function | Purpose |
 | -------- | ------- |
 | `aafdrokke(value)`, `aafdrökke(value)` | Prints a value followed by a newline. |
-| `invuier()` | Reads one input line as `teks`, or returns `niks` at end of input. |
+| `inveure()` | Reads one input line as `teks`, or returns `niks` at end of input. |
 
 All other library helpers are deferred until after the core language is stable.
 

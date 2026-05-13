@@ -50,7 +50,7 @@ aafdrokke(viefkes(10))
   </div>
   <div class="plat-card">
     <h3>Kleine runtime</h3>
-    <p>Nommers, tekste, booleans, <code>niks</code>, en veranderbare <code>portefeuil</code>-tabellen make de kern.</p>
+    <p>Nommers, tekste, booleans, <code>niks</code>, en veranderbare <code>tabel</code>-tabellen make de kern.</p>
   </div>
   <div class="plat-card">
     <h3>Geinterpreteerd</h3>
@@ -61,11 +61,11 @@ aafdrokke(viefkes(10))
 ## In 't Kort
 
 De huidige taol bevat allein de kern: primitieve waerdes, variabelen,
-expressies, globale funksies, veurwaerde, lusse, veranderbare `portefeuil`-tabellen,
+expressies, globale funksies, veurwaerde, lusse, veranderbare `tabel`-tabellen,
 en gelokaliseerde meldinge.
 
 De standaardbibliotheek begint bewust klein mit `aafdrokke(value)` /
-`aafdrökke(value)` veur oetvoer, `invuier()` veur invoer, en `waatis(value)`
+`aafdrökke(value)` veur oetvoer, `inveure()` veur invoer, en `waatis(value)`
 veur runtime-type-inspectie. Modules, imports, klasses, methodes, exceptions,
 closures, first-class funksies, statische types, en de groetere
 standaardbibliotheek zeen bewust oetgesteld.

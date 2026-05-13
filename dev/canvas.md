@@ -114,7 +114,7 @@ canvas_circle(canvas, x, y, radius, options?) -> niks
 canvas_text(canvas, x, y, text, options?) -> niks
 ```
 
-Options should use `portefeuil` tables:
+Options should use `tabel` tables:
 
 ```plat
 canvas_rect(c, 20, 20, 120, 80, {
@@ -306,7 +306,7 @@ src/
 ```
 
 The first version of the registry should preserve the existing behavior of
-`aafdrokke`, `aafdrökke`, `invuier`, and `waatis`. This step should not add
+`aafdrokke`, `aafdrökke`, `inveure`, and `waatis`. This step should not add
 canvas behavior yet. Its goal is to make built-ins pluggable while keeping
 existing e2e tests green.
 
@@ -388,7 +388,7 @@ The built-ins should validate:
 - canvas-handle arguments
 - numeric coordinates and sizes
 - string colors and titles
-- optional `portefeuil` option tables
+- optional `tabel` option tables
 - unknown option keys as runtime errors
 
 At the end of this step, canvas calls can be fully tested through the recording

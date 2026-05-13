@@ -1,6 +1,6 @@
 funksie odd(n):
     es n == 0:
-        trok neetwoar
+        trok kwatsj
     angesj:
         trok even(n - 1)
     enj

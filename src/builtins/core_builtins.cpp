@@ -12,7 +12,7 @@ namespace {
 inline constexpr std::string_view kPrintBuiltinAscii = "aafdrokke";
 inline constexpr std::string_view kPrintBuiltinComposed = "aafdrökke";
 inline constexpr std::string_view kPrintBuiltinDecomposed = "aafdro\xCC\x88kke";
-inline constexpr std::string_view kInputBuiltin = "invuier";
+inline constexpr std::string_view kInputBuiltin = "inveure";
 inline constexpr std::string_view kTypeBuiltin = "waatis";
 inline constexpr std::string_view kNumberTypeComposed = "nómmer";
 
@@ -39,7 +39,7 @@ std::string_view value_type_name(const Value &value) {
     }
 
     if (value.is_table()) {
-        return "portefeuil";
+        return "tabel";
     }
 
     if (value.is_native_handle()) {

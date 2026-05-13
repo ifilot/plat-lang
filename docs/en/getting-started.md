@@ -65,7 +65,7 @@ angesj:
 enj
 ```
 
-Truthiness keeps early programs compact: `niks`, `neetwoar`, `0`, empty text,
+Truthiness keeps early programs compact: `niks`, `kwatsj`, `0`, empty text,
 and empty tables are falsy; other values are truthy.
 
 ## 4. Repeat work with loops
@@ -133,9 +133,9 @@ enj
 aafdrokke(fib(10))
 ```
 
-## 6. Group data with `portefeuil` tables
+## 6. Group data with `tabel` tables
 
-`portefeuil` tables are mutable containers. You can use them like records:
+`tabel` tables are mutable containers. You can use them like records:
 
 ```platlang
 loat user = {
@@ -166,12 +166,12 @@ aafdrokke(user[field])
 
 ## 7. Read input
 
-The minimal standard library also includes `invuier()`, which reads one line of
+The minimal standard library also includes `inveure()`, which reads one line of
 input as `teks`.
 
 ```platlang
 aafdrokke("What is your name?")
-loat naam = invuier()
+loat naam = inveure()
 aafdrokke("hoi " + naam)
 ```
 
