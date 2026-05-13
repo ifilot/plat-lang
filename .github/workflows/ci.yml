@@ -113,6 +113,7 @@ jobs:
             exit 1
           fi
 
+          rm "${package_dir}/ldd.txt"
           mkdir -p dist/artifacts
           tar -czf "dist/artifacts/${package_name}.tar.gz" -C dist "${package_name}"
 
@@ -212,6 +213,7 @@ jobs:
               done
 
           strip "${package_dir}/platlang.exe" || true
+          rm "${package_dir}/ldd.txt"
           mkdir -p dist/artifacts
           (
             cd dist
