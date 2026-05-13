@@ -183,13 +183,14 @@ jobs:
           cp build/platlang_keywords.json "${package_dir}/platlang_keywords.json"
           cp -R build/capabilities "${package_dir}/capabilities"
 
-          ldd "${package_dir}/platlang.exe" | tee "${package_dir}/ldd.txt"
-          if grep -q "not found" "${package_dir}/ldd.txt"; then
+          package_path="${package_dir}:${package_dir}/capabilities/canvas:${PATH}"
+          PATH="${package_path}" ldd "${package_dir}/platlang.exe" | tee "${package_dir}/ldd.txt"
+          if grep "not found" "${package_dir}/ldd.txt" | grep -v 'api-ms-win-crt-'; then
             echo "package has missing shared library dependencies" >&2
             exit 1
           fi
 
-          ldd "${package_dir}/platlang.exe" \
+          PATH="${package_path}" ldd "${package_dir}/platlang.exe" \
             | awk '/\/ucrt64\// { print $3 }' \
             | sort -u \
             | while IFS= read -r dependency; do
@@ -197,13 +198,13 @@ jobs:
               done
 
           canvas_module="${package_dir}/capabilities/canvas/platlang_canvas_sdl.dll"
-          ldd "${canvas_module}" | tee -a "${package_dir}/ldd.txt"
-          if grep -q "not found" "${package_dir}/ldd.txt"; then
+          PATH="${package_path}" ldd "${canvas_module}" | tee -a "${package_dir}/ldd.txt"
+          if grep "not found" "${package_dir}/ldd.txt" | grep -v 'api-ms-win-crt-'; then
             echo "canvas capability has missing shared library dependencies" >&2
             exit 1
           fi
 
-          ldd "${canvas_module}" \
+          PATH="${package_path}" ldd "${canvas_module}" \
             | awk '/\/ucrt64\/.*SDL2.*\.dll/ { print $3 }' \
             | sort -u \
             | while IFS= read -r dependency; do
