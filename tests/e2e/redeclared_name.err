@@ -1,1 +1,1 @@
-2:1: error: name 'x' is already defined
+Line 2, Column 1: error: name 'x' is already defined

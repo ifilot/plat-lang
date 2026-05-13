@@ -273,7 +273,8 @@ void DiagnosticReporter::report(DiagnosticSeverity severity, DiagnosticId id,
     diagnostics_.emplace_back(severity, id, location, message);
 
     if (location.has_value()) {
-        *stream_ << location->line() << ":" << location->column() << ": ";
+        *stream_ << "Line " << location->line() << ", Column "
+                 << location->column() << ": ";
     }
 
     *stream_ << severity_label(language_, severity) << ": " << message << '\n';
