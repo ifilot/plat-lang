@@ -53,10 +53,33 @@ if(PLATLANG_ENABLE_SDL_CANVAS)
     message(FATAL_ERROR "PkgConfig is required for PLATLANG_ENABLE_SDL_CANVAS")
   endif()
   pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+
+  set(PLATLANG_SDL2_TARGET PkgConfig::SDL2)
+  if(MINGW)
+    add_library(platlang_sdl2 INTERFACE)
+    target_include_directories(platlang_sdl2 INTERFACE ${SDL2_INCLUDE_DIRS})
+
+    set(PLATLANG_SDL2_COMPILE_OPTIONS ${SDL2_CFLAGS_OTHER})
+    list(REMOVE_ITEM PLATLANG_SDL2_COMPILE_OPTIONS -Dmain=SDL_main)
+    target_compile_options(platlang_sdl2 INTERFACE ${PLATLANG_SDL2_COMPILE_OPTIONS})
+    target_link_directories(platlang_sdl2 INTERFACE ${SDL2_LIBRARY_DIRS})
+
+    set(PLATLANG_SDL2_LIBRARIES ${SDL2_LIBRARIES})
+    list(REMOVE_ITEM PLATLANG_SDL2_LIBRARIES mingw32 SDL2main)
+    target_link_libraries(platlang_sdl2 INTERFACE ${PLATLANG_SDL2_LIBRARIES})
+
+    set(PLATLANG_SDL2_LINK_OPTIONS ${SDL2_LDFLAGS_OTHER})
+    list(REMOVE_ITEM PLATLANG_SDL2_LINK_OPTIONS -mwindows)
+    target_link_options(platlang_sdl2 INTERFACE ${PLATLANG_SDL2_LINK_OPTIONS})
+
+    set(PLATLANG_SDL2_TARGET platlang_sdl2)
+  endif()
+
   target_sources(platlang_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/canvas/sdl_canvas_backend.cpp
   )
-  target_link_libraries(platlang_core PUBLIC PkgConfig::SDL2)
+  target_compile_definitions(platlang_core PRIVATE SDL_MAIN_HANDLED)
+  target_link_libraries(platlang_core PUBLIC ${PLATLANG_SDL2_TARGET})
 endif()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/capabilities

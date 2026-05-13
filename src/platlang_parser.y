@@ -25,6 +25,10 @@ plat::DiagnosticReporter *platlang_diagnostics = nullptr;
 
 %locations
 
+/* Statement boundaries are implicit, so Bison intentionally shifts in cases
+   where the next token can continue the current expression or return value. */
+%expect 13
+
 %union {
   double number;
   bool boolean;

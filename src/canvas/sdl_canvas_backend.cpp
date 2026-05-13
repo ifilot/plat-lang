@@ -350,6 +350,7 @@ void SdlCanvasBackend::initialize_sdl() {
         return;
     }
 
+    SDL_SetMainReady();
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
         throw_sdl_error("could not initialize SDL video");
     }
