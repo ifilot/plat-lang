@@ -250,3 +250,12 @@ add_platlang_e2e_test(canvas_unavailable)
 add_platlang_e2e_test(import_canvas_basic)
 add_platlang_e2e_test(import_unknown)
 add_platlang_e2e_test(import_canvas_protected_name)
+
+add_test(
+  NAME e2e_packaged_bin_capability_search
+  COMMAND
+    bash
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e/run_packaged_capability_test.sh
+    $<TARGET_FILE:platlang>
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e/import_canvas_basic
+)

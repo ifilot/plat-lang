@@ -180,8 +180,13 @@ std::vector<std::filesystem::path> capability_search_paths(
 
     const std::filesystem::path executable_path(argv0);
     if (executable_path.has_parent_path()) {
-        paths.push_back(std::filesystem::absolute(executable_path).parent_path() /
-                        "capabilities");
+        const std::filesystem::path executable_directory =
+            std::filesystem::absolute(executable_path).parent_path();
+        paths.push_back(executable_directory / "capabilities");
+
+        if (executable_directory.filename() == "bin") {
+            paths.push_back(executable_directory.parent_path() / "capabilities");
+        }
     }
 
     return paths;

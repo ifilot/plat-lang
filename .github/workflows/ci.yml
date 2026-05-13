@@ -178,24 +178,24 @@ jobs:
           fi
 
           package_dir="dist/${package_name}"
-          mkdir -p "${package_dir}"
-          cp build/platlang.exe "${package_dir}/platlang.exe"
-          cp build/platlang_core.dll "${package_dir}/platlang_core.dll"
+          mkdir -p "${package_dir}/bin"
+          cp build/platlang.exe "${package_dir}/bin/platlang.exe"
+          cp build/platlang_core.dll "${package_dir}/bin/platlang_core.dll"
           cp build/platlang_keywords.json "${package_dir}/platlang_keywords.json"
           cp -R build/capabilities "${package_dir}/capabilities"
 
-          package_path="${package_dir}:${package_dir}/capabilities/canvas:${PATH}"
-          PATH="${package_path}" ldd "${package_dir}/platlang.exe" | tee "${package_dir}/ldd.txt"
+          package_path="${package_dir}/bin:${package_dir}/capabilities/canvas:${PATH}"
+          PATH="${package_path}" ldd "${package_dir}/bin/platlang.exe" | tee "${package_dir}/ldd.txt"
           if grep "not found" "${package_dir}/ldd.txt" | grep -v 'api-ms-win-crt-'; then
             echo "package has missing shared library dependencies" >&2
             exit 1
           fi
 
-          PATH="${package_path}" ldd "${package_dir}/platlang.exe" \
+          PATH="${package_path}" ldd "${package_dir}/bin/platlang.exe" \
             | awk '/\/ucrt64\// { print $3 }' \
             | sort -u \
             | while IFS= read -r dependency; do
-                cp "${dependency}" "${package_dir}/"
+                cp "${dependency}" "${package_dir}/bin/"
               done
 
           canvas_module="${package_dir}/capabilities/canvas/platlang_canvas_sdl.dll"
@@ -212,7 +212,8 @@ jobs:
                 cp "${dependency}" "${package_dir}/capabilities/canvas/"
               done
 
-          strip "${package_dir}/platlang.exe" || true
+          strip "${package_dir}/bin/platlang.exe" || true
+          strip "${package_dir}/bin/"*.dll "${canvas_module}" || true
           rm "${package_dir}/ldd.txt"
           mkdir -p dist/artifacts
           (
