@@ -82,7 +82,7 @@ if [ -f "$case_base.out" ]; then
     expected_out="$case_base.out"
 fi
 
-if ! diff -u "$expected_out" "$actual_out"; then
+if ! diff -u --strip-trailing-cr "$expected_out" "$actual_out"; then
     exit 1
 fi
 
@@ -91,6 +91,6 @@ if [ -f "$case_base.err" ]; then
     expected_err="$case_base.err"
 fi
 
-if ! diff -u "$expected_err" "$actual_err"; then
+if ! diff -u --strip-trailing-cr "$expected_err" "$actual_err"; then
     exit 1
 fi

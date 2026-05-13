@@ -28,10 +28,16 @@ constexpr std::string_view kRectName = "canvas_rechhook";
 constexpr std::string_view kCircleName = "canvas_sirkel";
 constexpr std::string_view kTextName = "canvas_teks";
 
+/**
+ * Returns the default opaque black canvas color.
+ */
 CanvasColor black() {
     return CanvasColor{0, 0, 0, 255};
 }
 
+/**
+ * Returns the user-facing runtime kind for a value used in diagnostics.
+ */
 std::string value_kind(const Value &value) {
     if (value.is_nil()) {
         return "niks";
@@ -54,6 +60,11 @@ std::string value_kind(const Value &value) {
     return "waarde";
 }
 
+/**
+ * Reports a canvas built-in runtime error.
+ *
+ * @throws DiagnosticFatal through the diagnostic reporter.
+ */
 [[noreturn]] void runtime_error(DiagnosticReporter &diagnostics,
                                 SourceLocation location,
                                 const std::string &message) {
@@ -61,6 +72,9 @@ std::string value_kind(const Value &value) {
                       {DiagnosticArg("message", message)});
 }
 
+/**
+ * Validates that a built-in argument count falls within an inclusive range.
+ */
 void require_arity_range(DiagnosticReporter &diagnostics,
                          const std::string &name,
                          const std::vector<Value> &args,
@@ -83,6 +97,9 @@ void require_arity_range(DiagnosticReporter &diagnostics,
          DiagnosticArg("actual", builtin_count_to_string(args.size()))});
 }
 
+/**
+ * Extracts a numeric argument or reports a typed runtime error.
+ */
 double expect_number(BuiltinContext &context, const Value &value,
                      const std::string &name, std::size_t index,
                      SourceLocation location) {
@@ -96,6 +113,9 @@ double expect_number(BuiltinContext &context, const Value &value,
     runtime_error(context.diagnostics(), location, message.str());
 }
 
+/**
+ * Extracts a string argument or reports a typed runtime error.
+ */
 std::string expect_string(BuiltinContext &context, const Value &value,
                           const std::string &name, std::size_t index,
                           SourceLocation location) {
@@ -109,6 +129,9 @@ std::string expect_string(BuiltinContext &context, const Value &value,
     runtime_error(context.diagnostics(), location, message.str());
 }
 
+/**
+ * Extracts a canvas handle argument or reports a typed runtime error.
+ */
 const NativeHandleValue &expect_canvas(BuiltinContext &context,
                                        const Value &value,
                                        const std::string &name,
@@ -124,6 +147,9 @@ const NativeHandleValue &expect_canvas(BuiltinContext &context,
     runtime_error(context.diagnostics(), location, message.str());
 }
 
+/**
+ * Converts one hexadecimal color digit to its numeric value.
+ */
 int hex_digit(char value) {
     if (value >= '0' && value <= '9') {
         return value - '0';
@@ -137,6 +163,11 @@ int hex_digit(char value) {
     return -1;
 }
 
+/**
+ * Parses two hexadecimal color digits into one byte.
+ *
+ * @throws DiagnosticFatal when either digit is invalid.
+ */
 std::uint8_t hex_byte(char high, char low, DiagnosticReporter &diagnostics,
                       SourceLocation location, const std::string &source) {
     const int first = hex_digit(high);
@@ -149,6 +180,11 @@ std::uint8_t hex_byte(char high, char low, DiagnosticReporter &diagnostics,
     return static_cast<std::uint8_t>((first << 4) | second);
 }
 
+/**
+ * Parses a named color or #RRGGBB literal into a canvas color.
+ *
+ * @throws DiagnosticFatal when the color string is unknown or malformed.
+ */
 CanvasColor parse_color(DiagnosticReporter &diagnostics,
                         const std::string &source, SourceLocation location) {
     static const std::unordered_map<std::string_view, CanvasColor> colors = {
@@ -185,6 +221,9 @@ CanvasColor parse_color(DiagnosticReporter &diagnostics,
     runtime_error(diagnostics, location, "unknown canvas color '" + source + "'");
 }
 
+/**
+ * Converts a table key into text for diagnostics.
+ */
 std::string key_to_string(const TableKey &key) {
     if (std::holds_alternative<std::string>(key.value())) {
         return std::get<std::string>(key.value());
@@ -195,6 +234,11 @@ std::string key_to_string(const TableKey &key) {
     return out.str();
 }
 
+/**
+ * Parses the optional canvas drawing options table.
+ *
+ * @throws DiagnosticFatal when the options value or an option entry is invalid.
+ */
 CanvasDrawOptions parse_options(BuiltinContext &context, const Value *value,
                                 const std::string &name,
                                 SourceLocation location) {
@@ -251,6 +295,9 @@ CanvasDrawOptions parse_options(BuiltinContext &context, const Value *value,
     return options;
 }
 
+/**
+ * Implements the canvas creation built-in.
+ */
 Value call_canvas(CanvasService &canvas_service, BuiltinContext &context,
                   const std::string &name,
                   const std::vector<Value> &args, SourceLocation location) {
@@ -266,6 +313,9 @@ Value call_canvas(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas clear built-in.
+ */
 Value call_clear(CanvasService &canvas_service, BuiltinContext &context,
                  const std::string &name,
                  const std::vector<Value> &args, SourceLocation location) {
@@ -283,6 +333,9 @@ Value call_clear(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas present built-in.
+ */
 Value call_present(CanvasService &canvas_service, BuiltinContext &context,
                    const std::string &name,
                    const std::vector<Value> &args, SourceLocation location) {
@@ -297,6 +350,9 @@ Value call_present(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas wait-until-closed built-in.
+ */
 Value call_wait(CanvasService &canvas_service, BuiltinContext &context,
                 const std::string &name,
                 const std::vector<Value> &args, SourceLocation location) {
@@ -311,6 +367,9 @@ Value call_wait(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas pause built-in.
+ */
 Value call_pause(CanvasService &canvas_service, BuiltinContext &context,
                  const std::string &name,
                  const std::vector<Value> &args, SourceLocation location) {
@@ -326,6 +385,9 @@ Value call_pause(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas is-open built-in.
+ */
 Value call_is_open(CanvasService &canvas_service, BuiltinContext &context,
                    const std::string &name,
                    const std::vector<Value> &args, SourceLocation location) {
@@ -339,6 +401,9 @@ Value call_is_open(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas close built-in.
+ */
 Value call_close(CanvasService &canvas_service, BuiltinContext &context,
                  const std::string &name,
                  const std::vector<Value> &args, SourceLocation location) {
@@ -353,6 +418,9 @@ Value call_close(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas line drawing built-in.
+ */
 Value call_line(CanvasService &canvas_service, BuiltinContext &context,
                 const std::string &name,
                 const std::vector<Value> &args, SourceLocation location) {
@@ -377,6 +445,9 @@ Value call_line(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas rectangle drawing built-in.
+ */
 Value call_rect(CanvasService &canvas_service, BuiltinContext &context,
                 const std::string &name,
                 const std::vector<Value> &args, SourceLocation location) {
@@ -401,6 +472,9 @@ Value call_rect(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas circle drawing built-in.
+ */
 Value call_circle(CanvasService &canvas_service, BuiltinContext &context,
                   const std::string &name,
                   const std::vector<Value> &args, SourceLocation location) {
@@ -424,6 +498,9 @@ Value call_circle(CanvasService &canvas_service, BuiltinContext &context,
     }
 }
 
+/**
+ * Implements the canvas text drawing built-in.
+ */
 Value call_text(CanvasService &canvas_service, BuiltinContext &context,
                 const std::string &name,
                 const std::vector<Value> &args, SourceLocation location) {

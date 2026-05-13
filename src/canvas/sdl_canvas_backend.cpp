@@ -16,23 +16,40 @@ namespace {
 
 constexpr CanvasId kSdlCanvasId = 1;
 
+/**
+ * Rounds a floating-point canvas coordinate to an SDL integer coordinate.
+ */
 int to_int(double value) {
     return static_cast<int>(std::lround(value));
 }
 
+/**
+ * Rounds a floating-point value and clamps it to a positive SDL size.
+ */
 int positive_int(double value, int fallback = 1) {
     return std::max(fallback, to_int(value));
 }
 
+/**
+ * Raises a CanvasError using the current SDL error string.
+ *
+ * @throws CanvasError always.
+ */
 void throw_sdl_error(const std::string &prefix) {
     throw CanvasError(prefix + ": " + SDL_GetError());
 }
 
+/**
+ * Applies an RGBA color to an SDL renderer with alpha blending enabled.
+ */
 void set_color(SDL_Renderer *renderer, CanvasColor color) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 }
 
+/**
+ * Draws a line with approximate integer thickness.
+ */
 void draw_thick_line(SDL_Renderer *renderer, int x1, int y1, int x2, int y2,
                      int width) {
     if (width <= 1) {
@@ -47,6 +64,9 @@ void draw_thick_line(SDL_Renderer *renderer, int x1, int y1, int x2, int y2,
     }
 }
 
+/**
+ * Draws a rectangle outline with approximate integer thickness.
+ */
 void draw_rect_outline(SDL_Renderer *renderer, SDL_Rect rect, int width) {
     for (int i = 0; i < width; ++i) {
         SDL_Rect outline{rect.x - i, rect.y - i, rect.w + i * 2,
@@ -55,6 +75,9 @@ void draw_rect_outline(SDL_Renderer *renderer, SDL_Rect rect, int width) {
     }
 }
 
+/**
+ * Fills a circle using horizontal scan lines.
+ */
 void draw_filled_circle(SDL_Renderer *renderer, int cx, int cy, int radius) {
     for (int y = -radius; y <= radius; ++y) {
         const int x = static_cast<int>(
@@ -63,6 +86,9 @@ void draw_filled_circle(SDL_Renderer *renderer, int cx, int cy, int radius) {
     }
 }
 
+/**
+ * Draws a circle outline by filling points in an annulus.
+ */
 void draw_circle_outline(SDL_Renderer *renderer, int cx, int cy, int radius,
                          int width) {
     const int half = std::max(0, width / 2);
@@ -79,6 +105,9 @@ void draw_circle_outline(SDL_Renderer *renderer, int cx, int cy, int radius,
     }
 }
 
+/**
+ * Returns the 5x7 bitmap glyph for a supported character.
+ */
 std::array<std::uint8_t, 7> glyph_for(char raw) {
     const char ch = static_cast<char>(std::toupper(static_cast<unsigned char>(raw)));
     switch (ch) {
@@ -169,6 +198,9 @@ std::array<std::uint8_t, 7> glyph_for(char raw) {
     }
 }
 
+/**
+ * Draws simple 5x7 bitmap text into an SDL renderer.
+ */
 void draw_bitmap_text(SDL_Renderer *renderer, int x, int y,
                       const std::string &text, int pixel_size) {
     int cursor = x;

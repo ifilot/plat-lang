@@ -80,6 +80,9 @@ Class comments should explain the role of the class in the implementation.
 Function comments should explain what the function does, its important inputs,
 and any meaningful error behavior.
 
+When a function is declared in a `.h` file and defined in a `.cpp` file, both the
+declaration and definition must have the same Doxygen comment.
+
 Example:
 
 ```cpp

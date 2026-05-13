@@ -16,6 +16,11 @@ inline constexpr std::string_view kInputBuiltin = "invuier";
 inline constexpr std::string_view kTypeBuiltin = "waatis";
 inline constexpr std::string_view kNumberTypeComposed = "nómmer";
 
+/**
+ * Returns the user-facing type name for a runtime value.
+ *
+ * @throws std::logic_error when the value variant is not recognized.
+ */
 std::string_view value_type_name(const Value &value) {
     if (value.is_nil()) {
         return "niks";
@@ -44,6 +49,11 @@ std::string_view value_type_name(const Value &value) {
     throw std::logic_error("unknown value type");
 }
 
+/**
+ * Implements the print built-in.
+ *
+ * Validates that one argument is present and writes its string form to output.
+ */
 Value call_print_builtin(BuiltinContext &context, const std::string &name,
                          const std::vector<Value> &args,
                          SourceLocation location) {
@@ -53,6 +63,11 @@ Value call_print_builtin(BuiltinContext &context, const std::string &name,
     return Value();
 }
 
+/**
+ * Implements the input built-in.
+ *
+ * Reads one line from input and strips a trailing carriage return when present.
+ */
 Value call_input_builtin(BuiltinContext &context, const std::string &name,
                          const std::vector<Value> &args,
                          SourceLocation location) {
@@ -69,6 +84,11 @@ Value call_input_builtin(BuiltinContext &context, const std::string &name,
     return Value();
 }
 
+/**
+ * Implements the type-inspection built-in.
+ *
+ * Writes the user-facing type name of the argument to output.
+ */
 Value call_type_builtin(BuiltinContext &context, const std::string &name,
                         const std::vector<Value> &args,
                         SourceLocation location) {

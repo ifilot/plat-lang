@@ -54,32 +54,49 @@ if(PLATLANG_ENABLE_SDL_CANVAS)
   endif()
   pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 
-  set(PLATLANG_SDL2_TARGET PkgConfig::SDL2)
   if(MINGW)
-    add_library(platlang_sdl2 INTERFACE)
-    target_include_directories(platlang_sdl2 INTERFACE ${SDL2_INCLUDE_DIRS})
+    get_target_property(PLATLANG_SDL2_COMPILE_OPTIONS PkgConfig::SDL2 INTERFACE_COMPILE_OPTIONS)
+    if(PLATLANG_SDL2_COMPILE_OPTIONS)
+      list(REMOVE_ITEM PLATLANG_SDL2_COMPILE_OPTIONS -Dmain=SDL_main)
+      set_property(TARGET PkgConfig::SDL2 PROPERTY
+        INTERFACE_COMPILE_OPTIONS ${PLATLANG_SDL2_COMPILE_OPTIONS})
+    endif()
 
-    set(PLATLANG_SDL2_COMPILE_OPTIONS ${SDL2_CFLAGS_OTHER})
-    list(REMOVE_ITEM PLATLANG_SDL2_COMPILE_OPTIONS -Dmain=SDL_main)
-    target_compile_options(platlang_sdl2 INTERFACE ${PLATLANG_SDL2_COMPILE_OPTIONS})
-    target_link_directories(platlang_sdl2 INTERFACE ${SDL2_LIBRARY_DIRS})
+    get_target_property(PLATLANG_SDL2_LINK_OPTIONS PkgConfig::SDL2 INTERFACE_LINK_OPTIONS)
+    if(PLATLANG_SDL2_LINK_OPTIONS)
+      set(PLATLANG_SDL2_FILTERED_LINK_OPTIONS)
+      foreach(PLATLANG_SDL2_LINK_OPTION IN LISTS PLATLANG_SDL2_LINK_OPTIONS)
+        if(NOT PLATLANG_SDL2_LINK_OPTION MATCHES "^-mwindows$"
+           AND NOT PLATLANG_SDL2_LINK_OPTION MATCHES "(^|[/\\\\])lib(SDL2main|mingw32)\\.a$"
+           AND NOT PLATLANG_SDL2_LINK_OPTION MATCHES "^-l(SDL2main|mingw32)$")
+          list(APPEND PLATLANG_SDL2_FILTERED_LINK_OPTIONS "${PLATLANG_SDL2_LINK_OPTION}")
+        endif()
+      endforeach()
+      set_property(TARGET PkgConfig::SDL2 PROPERTY
+        INTERFACE_LINK_OPTIONS ${PLATLANG_SDL2_FILTERED_LINK_OPTIONS})
+    endif()
 
-    set(PLATLANG_SDL2_LIBRARIES ${SDL2_LIBRARIES})
-    list(REMOVE_ITEM PLATLANG_SDL2_LIBRARIES mingw32 SDL2main)
-    target_link_libraries(platlang_sdl2 INTERFACE ${PLATLANG_SDL2_LIBRARIES})
-
-    set(PLATLANG_SDL2_LINK_OPTIONS ${SDL2_LDFLAGS_OTHER})
-    list(REMOVE_ITEM PLATLANG_SDL2_LINK_OPTIONS -mwindows)
-    target_link_options(platlang_sdl2 INTERFACE ${PLATLANG_SDL2_LINK_OPTIONS})
-
-    set(PLATLANG_SDL2_TARGET platlang_sdl2)
+    get_target_property(PLATLANG_SDL2_LINK_LIBRARIES PkgConfig::SDL2 INTERFACE_LINK_LIBRARIES)
+    if(PLATLANG_SDL2_LINK_LIBRARIES)
+      set(PLATLANG_SDL2_FILTERED_LINK_LIBRARIES)
+      foreach(PLATLANG_SDL2_LIBRARY IN LISTS PLATLANG_SDL2_LINK_LIBRARIES)
+        if(NOT PLATLANG_SDL2_LIBRARY MATCHES "(^|[/\\\\])lib(SDL2main|mingw32)\\.a$"
+           AND NOT PLATLANG_SDL2_LIBRARY MATCHES "^(SDL2main|mingw32)$"
+           AND NOT PLATLANG_SDL2_LIBRARY MATCHES "^-l(SDL2main|mingw32)$"
+           AND NOT PLATLANG_SDL2_LIBRARY MATCHES "^-mwindows$")
+          list(APPEND PLATLANG_SDL2_FILTERED_LINK_LIBRARIES "${PLATLANG_SDL2_LIBRARY}")
+        endif()
+      endforeach()
+      set_property(TARGET PkgConfig::SDL2 PROPERTY
+        INTERFACE_LINK_LIBRARIES ${PLATLANG_SDL2_FILTERED_LINK_LIBRARIES})
+    endif()
   endif()
 
   target_sources(platlang_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/canvas/sdl_canvas_backend.cpp
   )
   target_compile_definitions(platlang_core PRIVATE SDL_MAIN_HANDLED)
-  target_link_libraries(platlang_core PUBLIC ${PLATLANG_SDL2_TARGET})
+  target_link_libraries(platlang_core PUBLIC PkgConfig::SDL2)
 endif()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/capabilities
