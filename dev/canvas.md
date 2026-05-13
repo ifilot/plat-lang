@@ -111,6 +111,7 @@ canvas_close(canvas) -> niks
 canvas_line(canvas, x1, y1, x2, y2, options?) -> niks
 canvas_rect(canvas, x, y, width, height, options?) -> niks
 canvas_circle(canvas, x, y, radius, options?) -> niks
+canvas_path(canvas, svg_path_data, options?) -> niks
 canvas_text(canvas, x, y, text, options?) -> niks
 ```
 

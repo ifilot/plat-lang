@@ -51,13 +51,17 @@ Limburgish comments.
 
 ## Build
 
-Requires CMake, Bison, Flex, and a C++20 compiler.
+Requires CMake, Bison, Flex, and a C++20 compiler. SDL canvas builds also
+require SDL2 development packages.
 
 On Debian/Ubuntu:
 
 ```sh
 sudo apt-get update
 sudo apt-get install -y cmake g++ flex bison
+
+# Optional, for -DPLATLANG_ENABLE_SDL_CANVAS=ON:
+sudo apt-get install -y libsdl2-dev
 ```
 
 Then build:

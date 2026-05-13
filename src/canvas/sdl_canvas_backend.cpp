@@ -9,7 +9,9 @@
 #include <chrono>
 #include <cmath>
 #include <cctype>
+#include <cstdint>
 #include <string>
+#include <vector>
 
 namespace plat {
 namespace {
@@ -229,6 +231,132 @@ void draw_bitmap_text(SDL_Renderer *renderer, int x, int y,
     }
 }
 
+double edge_side(const CanvasPoint &start, const CanvasPoint &end, double x,
+                 double y) {
+    return (end.x - start.x) * (y - start.y)
+           - (x - start.x) * (end.y - start.y);
+}
+
+bool contributes_to_fill(const CanvasPath &path) {
+    return path.points.size() >= 3;
+}
+
+bool inside_compound_path(const std::vector<CanvasPath> &paths, double x,
+                          double y) {
+    int winding = 0;
+
+    for (const CanvasPath &path : paths) {
+        if (!contributes_to_fill(path)) {
+            continue;
+        }
+
+        for (std::size_t index = 0; index < path.points.size(); ++index) {
+            const CanvasPoint &start = path.points[index];
+            const CanvasPoint &end =
+                path.points[(index + 1) % path.points.size()];
+            if (start.y <= y) {
+                if (end.y > y && edge_side(start, end, x, y) > 0.0) {
+                    ++winding;
+                }
+            } else if (end.y <= y && edge_side(start, end, x, y) < 0.0) {
+                --winding;
+            }
+        }
+    }
+
+    return winding != 0;
+}
+
+void fill_compound_path(SDL_Renderer *renderer,
+                        const std::vector<CanvasPath> &paths,
+                        CanvasColor color) {
+    bool has_fillable_path = false;
+    double min_x = 0.0;
+    double min_y = 0.0;
+    double max_x = 0.0;
+    double max_y = 0.0;
+
+    for (const CanvasPath &path : paths) {
+        if (!contributes_to_fill(path)) {
+            continue;
+        }
+
+        for (const CanvasPoint &point : path.points) {
+            if (!has_fillable_path) {
+                min_x = max_x = point.x;
+                min_y = max_y = point.y;
+                has_fillable_path = true;
+                continue;
+            }
+
+            min_x = std::min(min_x, point.x);
+            min_y = std::min(min_y, point.y);
+            max_x = std::max(max_x, point.x);
+            max_y = std::max(max_y, point.y);
+        }
+    }
+
+    if (!has_fillable_path) {
+        return;
+    }
+
+    int width = 0;
+    int height = 0;
+    SDL_GetRendererOutputSize(renderer, &width, &height);
+
+    const int x_begin =
+        std::max(0, static_cast<int>(std::floor(min_x)));
+    const int y_begin =
+        std::max(0, static_cast<int>(std::floor(min_y)));
+    const int x_end =
+        std::min(width - 1, static_cast<int>(std::ceil(max_x)));
+    const int y_end =
+        std::min(height - 1, static_cast<int>(std::ceil(max_y)));
+    if (x_begin > x_end || y_begin > y_end) {
+        return;
+    }
+
+    set_color(renderer, color);
+    for (int y = y_begin; y <= y_end; ++y) {
+        int span_start = -1;
+        for (int x = x_begin; x <= x_end; ++x) {
+            const bool inside = inside_compound_path(paths, x + 0.5, y + 0.5);
+            if (inside && span_start < 0) {
+                span_start = x;
+            } else if (!inside && span_start >= 0) {
+                SDL_RenderDrawLine(renderer, span_start, y, x - 1, y);
+                span_start = -1;
+            }
+        }
+        if (span_start >= 0) {
+            SDL_RenderDrawLine(renderer, span_start, y, x_end, y);
+        }
+    }
+}
+
+void draw_path_outline(SDL_Renderer *renderer, const CanvasPath &path,
+                       int width) {
+    if (path.points.size() < 2) {
+        return;
+    }
+
+    for (std::size_t index = 1; index < path.points.size(); ++index) {
+        draw_thick_line(renderer,
+                        to_int(path.points[index - 1].x),
+                        to_int(path.points[index - 1].y),
+                        to_int(path.points[index].x),
+                        to_int(path.points[index].y),
+                        width);
+    }
+
+    if (path.closed) {
+        const CanvasPoint &last = path.points.back();
+        const CanvasPoint &first = path.points.front();
+        draw_thick_line(renderer, to_int(last.x), to_int(last.y),
+                        to_int(first.x), to_int(first.y), width);
+    }
+}
+
 } // namespace
 
 SdlCanvasBackend::~SdlCanvasBackend() {
@@ -364,6 +492,28 @@ void SdlCanvasBackend::circle(CanvasId canvas, double x, double y,
     if (options.stroke.has_value()) {
         set_color(renderer_, *options.stroke);
         draw_circle_outline(renderer_, cx, cy, r, positive_int(options.width));
+    }
+}
+
+void SdlCanvasBackend::path(CanvasId canvas,
+                            const std::vector<CanvasPath> &paths,
+                            const CanvasDrawOptions &options) {
+    require_open(canvas);
+    pump_events();
+
+    if (options.fill.has_value()) {
+        fill_compound_path(renderer_, paths, *options.fill);
+    }
+
+    for (const CanvasPath &path : paths) {
+        if (path.points.size() < 2) {
+            continue;
+        }
+
+        if (options.stroke.has_value()) {
+            set_color(renderer_, *options.stroke);
+            draw_path_outline(renderer_, path, positive_int(options.width));
+        }
     }
 }
 

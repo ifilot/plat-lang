@@ -25,6 +25,22 @@ struct CanvasColor {
 };
 
 /**
+ * One point in canvas pixel coordinates.
+ */
+struct CanvasPoint {
+    double x = 0.0;
+    double y = 0.0;
+};
+
+/**
+ * One closed or open flattened path contour.
+ */
+struct CanvasPath {
+    std::vector<CanvasPoint> points;
+    bool closed = false;
+};
+
+/**
  * Optional drawing attributes shared by shape and text operations.
  */
 struct CanvasDrawOptions {
@@ -33,6 +49,7 @@ struct CanvasDrawOptions {
     std::optional<CanvasColor> color;
     double width = 1.0;
     double size = 16.0;
+    double curve_steps = 24.0;
 };
 
 /**
@@ -154,6 +171,18 @@ public:
      */
     virtual void circle(CanvasId canvas, double x, double y, double radius,
                         const CanvasDrawOptions &options) = 0;
+
+    /**
+     * Draws flattened path contours on an open canvas.
+     *
+     * @param canvas Canvas identifier to draw on.
+     * @param paths Flattened path contours.
+     * @param options Fill, stroke, and stroke-width attributes.
+     *
+     * @throws CanvasError when the canvas is invalid or closed.
+     */
+    virtual void path(CanvasId canvas, const std::vector<CanvasPath> &paths,
+                      const CanvasDrawOptions &options) = 0;
 
     /**
      * Draws bitmap text on an open canvas.

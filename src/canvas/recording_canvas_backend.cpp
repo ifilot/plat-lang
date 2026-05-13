@@ -86,6 +86,16 @@ void RecordingCanvasBackend::circle(CanvasId canvas, double x, double y,
     operations_.push_back(operation);
 }
 
+void RecordingCanvasBackend::path(CanvasId canvas,
+                                  const std::vector<CanvasPath> &paths,
+                                  const CanvasDrawOptions &options) {
+    require_open(canvas);
+    CanvasOperation operation{CanvasOperationKind::Path, canvas};
+    operation.paths = paths;
+    operation.options = options;
+    operations_.push_back(operation);
+}
+
 void RecordingCanvasBackend::text(CanvasId canvas, double x, double y,
                                   const std::string &text,
                                   const CanvasDrawOptions &options) {

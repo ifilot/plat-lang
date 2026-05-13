@@ -60,6 +60,10 @@ void run_canvas_tests(TestContext &context) {
     call_canvas_builtin(registry, builtin_context, "canvas_rechhook",
                         {canvas, Value(10.0), Value(20.0), Value(30.0),
                          Value(40.0), Value(make_options())});
+    call_canvas_builtin(registry, builtin_context, "canvas_pad",
+                        {canvas,
+                         Value(std::string("m 0,0 c 10,0 10,10 20,10 z")),
+                         Value(make_options())});
     Value open = call_canvas_builtin(registry, builtin_context, "canvas_ope",
                                      {canvas});
 
@@ -67,7 +71,7 @@ void run_canvas_tests(TestContext &context) {
     EXPECT_TRUE(context, open.as_bool());
 
     const std::vector<CanvasOperation> &operations = recording->operations();
-    EXPECT_EQ(context, operations.size(), static_cast<std::size_t>(3));
+    EXPECT_EQ(context, operations.size(), static_cast<std::size_t>(4));
     EXPECT_TRUE(context, operations[0].kind == CanvasOperationKind::Create);
     EXPECT_EQ(context, operations[0].numbers[0], 100.0);
     EXPECT_EQ(context, operations[0].text, "Demo");
@@ -80,6 +84,10 @@ void run_canvas_tests(TestContext &context) {
     EXPECT_TRUE(context,
                 operations[2].options.fill.value() ==
                     (CanvasColor{255, 0, 0, 255}));
+    EXPECT_TRUE(context, operations[3].kind == CanvasOperationKind::Path);
+    EXPECT_EQ(context, operations[3].paths.size(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(context, operations[3].paths[0].closed);
+    EXPECT_TRUE(context, operations[3].paths[0].points.size() > 3);
 
     auto bad_options = std::make_shared<TableValue>();
     bad_options->set(TableKey(std::string("fill")), Value(1.0));

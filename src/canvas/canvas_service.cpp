@@ -88,6 +88,12 @@ void CanvasService::circle(const NativeHandleValue &canvas, double x, double y,
     backend().circle(checked_id(canvas), x, y, radius, options);
 }
 
+void CanvasService::path(const NativeHandleValue &canvas,
+                         const std::vector<CanvasPath> &paths,
+                         const CanvasDrawOptions &options) {
+    backend().path(checked_id(canvas), paths, options);
+}
+
 void CanvasService::text(const NativeHandleValue &canvas, double x, double y,
                          const std::string &text,
                          const CanvasDrawOptions &options) {

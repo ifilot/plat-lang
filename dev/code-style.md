@@ -74,14 +74,20 @@ private:
 
 ## Documentation
 
-All classes and functions must have clear Doxygen-style comments.
+All public classes and functions must have clear Doxygen-style comments.
 
 Class comments should explain the role of the class in the implementation.
 Function comments should explain what the function does, its important inputs,
 and any meaningful error behavior.
 
-When a function is declared in a `.h` file and defined in a `.cpp` file, both the
-declaration and definition must have the same Doxygen comment.
+Put the Doxygen comment on the declaration that introduces the public API. For a
+function declared in a `.h` file and defined in a `.cpp` file, document the
+declaration in the header and do not duplicate that same Doxygen block above the
+definition. If the implementation needs extra explanation, use a normal comment
+near the relevant code instead.
+
+Private helper functions may use Doxygen comments when they clarify intent, but
+short implementation details do not need formal documentation blocks.
 
 Example:
 

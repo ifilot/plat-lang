@@ -108,7 +108,9 @@ if(PLATLANG_ENABLE_SDL_CANVAS)
   target_include_directories(platlang_canvas_sdl PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
-  target_link_libraries(platlang_canvas_sdl PRIVATE platlang_core PkgConfig::SDL2)
+  target_link_libraries(platlang_canvas_sdl PRIVATE
+    platlang_core
+    PkgConfig::SDL2)
   set_target_properties(platlang_canvas_sdl PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/capabilities/canvas
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/capabilities/canvas

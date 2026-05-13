@@ -148,6 +148,15 @@ public:
                 double radius, const CanvasDrawOptions &options);
 
     /**
+     * Draws flattened path contours on a canvas handle.
+     *
+     * @throws CanvasError when the handle is invalid or the backend fails.
+     */
+    void path(const NativeHandleValue &canvas,
+              const std::vector<CanvasPath> &paths,
+              const CanvasDrawOptions &options);
+
+    /**
      * Draws text on a canvas handle.
      *
      * @throws CanvasError when the handle is invalid or the backend fails.

@@ -101,6 +101,14 @@ public:
                 const CanvasDrawOptions &options) override;
 
     /**
+     * Draws flattened path contours into the SDL renderer.
+     *
+     * @throws CanvasError when the canvas is invalid or closed.
+     */
+    void path(CanvasId canvas, const std::vector<CanvasPath> &paths,
+              const CanvasDrawOptions &options) override;
+
+    /**
      * Draws bitmap text into the SDL renderer.
      *
      * @throws CanvasError when the canvas is invalid or closed.

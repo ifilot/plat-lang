@@ -17,6 +17,10 @@ canvas_sirkel(doek, 320, 220, 60, {
     vulling = "tomato",
 })
 
+canvas_pad(doek, "M 430 120 C 520 90 550 210 430 240 Z", {
+    vulling = "purple",
+})
+
 canvas_teks(doek, 50, 170, "Hallo canvas", {
     kleur = "black",
     greutte = 28,

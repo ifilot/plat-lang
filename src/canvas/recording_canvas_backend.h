@@ -20,6 +20,7 @@ enum class CanvasOperationKind {
     Line,
     Rect,
     Circle,
+    Path,
     Text,
 };
 
@@ -33,6 +34,7 @@ struct CanvasOperation {
     std::string text;
     CanvasColor color;
     CanvasDrawOptions options;
+    std::vector<CanvasPath> paths;
 };
 
 /**
@@ -116,6 +118,14 @@ public:
      */
     void circle(CanvasId canvas, double x, double y, double radius,
                 const CanvasDrawOptions &options) override;
+
+    /**
+     * Records a path drawing operation.
+     *
+     * @throws CanvasError when the canvas is invalid or closed.
+     */
+    void path(CanvasId canvas, const std::vector<CanvasPath> &paths,
+              const CanvasDrawOptions &options) override;
 
     /**
      * Records a text drawing operation.

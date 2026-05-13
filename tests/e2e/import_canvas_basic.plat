@@ -16,6 +16,9 @@ canvas_rechhook(doek, 5, 5, 20, 12, {
 canvas_sirkel(doek, 32, 24, 10, {
     vulling = "tomato",
 })
+canvas_pad(doek, "M 42 8 C 54 8 54 20 42 20 Z", {
+    vulling = "red",
+})
 canvas_teks(doek, 8, 36, "Hoi", {
     kleur = "black",
     greutte = 14,

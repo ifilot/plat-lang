@@ -5,6 +5,8 @@
 
 #include <array>
 #include <cctype>
+#include <cmath>
+#include <cstdlib>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -26,6 +28,7 @@ constexpr std::string_view kCloseName = "canvas_sloet";
 constexpr std::string_view kLineName = "canvas_lien";
 constexpr std::string_view kRectName = "canvas_rechhook";
 constexpr std::string_view kCircleName = "canvas_sirkel";
+constexpr std::string_view kPathName = "canvas_pad";
 constexpr std::string_view kTextName = "canvas_teks";
 
 /**
@@ -288,12 +291,345 @@ CanvasDrawOptions parse_options(BuiltinContext &context, const Value *value,
             continue;
         }
 
+        if (option == "stappe") {
+            options.curve_steps =
+                expect_number(context, entry, name, 0, location);
+            continue;
+        }
+
         runtime_error(context.diagnostics(), location,
                       "unknown canvas option '" + option + "'");
     }
 
     return options;
 }
+
+class SvgPathParser {
+private:
+    BuiltinContext &context_;
+    const std::string &name_;
+    const std::string &source_;
+    SourceLocation location_;
+    std::size_t offset_ = 0;
+    char command_ = '\0';
+    CanvasPoint current_;
+    CanvasPoint subpath_start_;
+    CanvasPoint last_cubic_control_;
+    CanvasPoint last_quadratic_control_;
+    bool has_last_cubic_control_ = false;
+    bool has_last_quadratic_control_ = false;
+    std::vector<CanvasPath> paths_;
+    CanvasPath current_path_;
+    int curve_steps_;
+
+public:
+    SvgPathParser(BuiltinContext &context, const std::string &name,
+                  const std::string &source, SourceLocation location,
+                  double curve_steps)
+        : context_(context),
+          name_(name),
+          source_(source),
+          location_(location),
+          curve_steps_(std::max(1, static_cast<int>(std::lround(curve_steps)))) {}
+
+    std::vector<CanvasPath> parse() {
+        skip_separators();
+
+        while (!at_end()) {
+            if (is_command(peek())) {
+                command_ = source_[offset_++];
+            } else if (command_ == '\0') {
+                fail("path must start with a command");
+            }
+
+            switch (command_) {
+            case 'M':
+            case 'm':
+                parse_move(command_ == 'm');
+                break;
+            case 'L':
+            case 'l':
+                parse_line(command_ == 'l');
+                break;
+            case 'H':
+            case 'h':
+                parse_horizontal(command_ == 'h');
+                break;
+            case 'V':
+            case 'v':
+                parse_vertical(command_ == 'v');
+                break;
+            case 'C':
+            case 'c':
+                parse_cubic(command_ == 'c');
+                break;
+            case 'S':
+            case 's':
+                parse_smooth_cubic(command_ == 's');
+                break;
+            case 'Q':
+            case 'q':
+                parse_quadratic(command_ == 'q');
+                break;
+            case 'T':
+            case 't':
+                parse_smooth_quadratic(command_ == 't');
+                break;
+            case 'Z':
+            case 'z':
+                close_path();
+                command_ = '\0';
+                break;
+            default:
+                fail(std::string("unsupported path command '") + command_ + "'");
+            }
+
+            skip_separators();
+        }
+
+        finish_path();
+        return paths_;
+    }
+
+private:
+    bool at_end() const {
+        return offset_ >= source_.size();
+    }
+
+    char peek() const {
+        return at_end() ? '\0' : source_[offset_];
+    }
+
+    static bool is_command(char value) {
+        switch (value) {
+        case 'M':
+        case 'm':
+        case 'L':
+        case 'l':
+        case 'H':
+        case 'h':
+        case 'V':
+        case 'v':
+        case 'C':
+        case 'c':
+        case 'S':
+        case 's':
+        case 'Q':
+        case 'q':
+        case 'T':
+        case 't':
+        case 'Z':
+        case 'z':
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    static bool begins_number(char value) {
+        return std::isdigit(static_cast<unsigned char>(value)) || value == '-'
+               || value == '+' || value == '.';
+    }
+
+    void fail(const std::string &message) const {
+        runtime_error(context_.diagnostics(), location_,
+                      "invalid canvas path for function '" + name_ + "': "
+                          + message);
+    }
+
+    void skip_separators() {
+        while (!at_end()) {
+            char value = peek();
+            if (std::isspace(static_cast<unsigned char>(value)) || value == ',') {
+                ++offset_;
+            } else {
+                break;
+            }
+        }
+    }
+
+    bool has_number() {
+        skip_separators();
+        return begins_number(peek());
+    }
+
+    double number() {
+        skip_separators();
+        if (!begins_number(peek())) {
+            fail("expected a number");
+        }
+
+        const char *start = source_.c_str() + offset_;
+        char *end = nullptr;
+        const double value = std::strtod(start, &end);
+        if (end == start) {
+            fail("expected a number");
+        }
+
+        offset_ = static_cast<std::size_t>(end - source_.c_str());
+        return value;
+    }
+
+    CanvasPoint point(bool relative) {
+        CanvasPoint result{number(), number()};
+        if (relative) {
+            result.x += current_.x;
+            result.y += current_.y;
+        }
+        return result;
+    }
+
+    void start_path(CanvasPoint point) {
+        finish_path();
+        current_path_ = CanvasPath();
+        current_ = point;
+        subpath_start_ = point;
+        current_path_.points.push_back(point);
+        reset_controls();
+    }
+
+    void finish_path() {
+        if (!current_path_.points.empty()) {
+            paths_.push_back(current_path_);
+            current_path_ = CanvasPath();
+        }
+    }
+
+    void add_point(CanvasPoint point) {
+        if (current_path_.points.empty()) {
+            current_path_.points.push_back(current_);
+        }
+        current_path_.points.push_back(point);
+        current_ = point;
+    }
+
+    void close_path() {
+        if (!current_path_.points.empty()) {
+            if (current_.x != subpath_start_.x || current_.y != subpath_start_.y) {
+                current_path_.points.push_back(subpath_start_);
+            }
+            current_path_.closed = true;
+            current_ = subpath_start_;
+        }
+        reset_controls();
+        finish_path();
+    }
+
+    void reset_controls() {
+        has_last_cubic_control_ = false;
+        has_last_quadratic_control_ = false;
+    }
+
+    CanvasPoint reflect(CanvasPoint point) const {
+        return CanvasPoint{current_.x * 2.0 - point.x,
+                           current_.y * 2.0 - point.y};
+    }
+
+    void cubic_to(CanvasPoint c1, CanvasPoint c2, CanvasPoint end) {
+        const CanvasPoint start = current_;
+        for (int step = 1; step <= curve_steps_; ++step) {
+            const double t = static_cast<double>(step) / curve_steps_;
+            const double u = 1.0 - t;
+            add_point(CanvasPoint{
+                u * u * u * start.x + 3.0 * u * u * t * c1.x
+                    + 3.0 * u * t * t * c2.x + t * t * t * end.x,
+                u * u * u * start.y + 3.0 * u * u * t * c1.y
+                    + 3.0 * u * t * t * c2.y + t * t * t * end.y});
+        }
+        last_cubic_control_ = c2;
+        has_last_cubic_control_ = true;
+        has_last_quadratic_control_ = false;
+    }
+
+    void quadratic_to(CanvasPoint control, CanvasPoint end) {
+        const CanvasPoint start = current_;
+        for (int step = 1; step <= curve_steps_; ++step) {
+            const double t = static_cast<double>(step) / curve_steps_;
+            const double u = 1.0 - t;
+            add_point(CanvasPoint{
+                u * u * start.x + 2.0 * u * t * control.x + t * t * end.x,
+                u * u * start.y + 2.0 * u * t * control.y + t * t * end.y});
+        }
+        last_quadratic_control_ = control;
+        has_last_quadratic_control_ = true;
+        has_last_cubic_control_ = false;
+    }
+
+    void parse_move(bool relative) {
+        start_path(point(relative));
+        while (has_number()) {
+            add_point(point(relative));
+        }
+        command_ = relative ? 'l' : 'L';
+    }
+
+    void parse_line(bool relative) {
+        do {
+            add_point(point(relative));
+        } while (has_number());
+        reset_controls();
+    }
+
+    void parse_horizontal(bool relative) {
+        do {
+            double x = number();
+            if (relative) {
+                x += current_.x;
+            }
+            add_point(CanvasPoint{x, current_.y});
+        } while (has_number());
+        reset_controls();
+    }
+
+    void parse_vertical(bool relative) {
+        do {
+            double y = number();
+            if (relative) {
+                y += current_.y;
+            }
+            add_point(CanvasPoint{current_.x, y});
+        } while (has_number());
+        reset_controls();
+    }
+
+    void parse_cubic(bool relative) {
+        do {
+            CanvasPoint c1 = point(relative);
+            CanvasPoint c2 = point(relative);
+            CanvasPoint end = point(relative);
+            cubic_to(c1, c2, end);
+        } while (has_number());
+    }
+
+    void parse_smooth_cubic(bool relative) {
+        do {
+            CanvasPoint c1 = has_last_cubic_control_
+                ? reflect(last_cubic_control_)
+                : current_;
+            CanvasPoint c2 = point(relative);
+            CanvasPoint end = point(relative);
+            cubic_to(c1, c2, end);
+        } while (has_number());
+    }
+
+    void parse_quadratic(bool relative) {
+        do {
+            CanvasPoint control = point(relative);
+            CanvasPoint end = point(relative);
+            quadratic_to(control, end);
+        } while (has_number());
+    }
+
+    void parse_smooth_quadratic(bool relative) {
+        do {
+            CanvasPoint control = has_last_quadratic_control_
+                ? reflect(last_quadratic_control_)
+                : current_;
+            CanvasPoint end = point(relative);
+            quadratic_to(control, end);
+        } while (has_number());
+    }
+};
 
 /**
  * Implements the canvas creation built-in.
@@ -499,6 +835,37 @@ Value call_circle(CanvasService &canvas_service, BuiltinContext &context,
 }
 
 /**
+ * Implements the canvas path drawing built-in.
+ */
+Value call_path(CanvasService &canvas_service, BuiltinContext &context,
+                const std::string &name,
+                const std::vector<Value> &args, SourceLocation location) {
+    require_arity_range(context.diagnostics(), name, args, 2, 3, location);
+
+    try {
+        CanvasDrawOptions options =
+            parse_options(context, args.size() == 3 ? &args[2] : nullptr, name,
+                          location);
+        if (!options.fill.has_value() && !options.stroke.has_value()) {
+            options.stroke = black();
+        }
+
+        const std::string path_data =
+            expect_string(context, args[1], name, 1, location);
+        std::vector<CanvasPath> paths =
+            SvgPathParser(context, name, path_data, location,
+                          options.curve_steps)
+                .parse();
+
+        canvas_service.path(expect_canvas(context, args[0], name, location),
+                            paths, options);
+        return Value();
+    } catch (const CanvasError &error) {
+        runtime_error(context.diagnostics(), location, error.what());
+    }
+}
+
+/**
  * Implements the canvas text drawing built-in.
  */
 Value call_text(CanvasService &canvas_service, BuiltinContext &context,
@@ -597,6 +964,13 @@ void register_canvas_builtins(BuiltinRegistry &registry,
                           const std::vector<Value> &args,
                           SourceLocation location) {
             return call_circle(canvas_service, context, name, args, location);
+        });
+    registry.register_function(
+        std::string(kPathName),
+        [&canvas_service](BuiltinContext &context, const std::string &name,
+                          const std::vector<Value> &args,
+                          SourceLocation location) {
+            return call_path(canvas_service, context, name, args, location);
         });
     registry.register_function(
         std::string(kTextName),
