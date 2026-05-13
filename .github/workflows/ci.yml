@@ -192,7 +192,10 @@ jobs:
 
           strip "${package_dir}/platlang.exe" || true
           mkdir -p dist/artifacts
-          cmake -E tar cf "dist/artifacts/${package_name}.zip" --format=zip -C dist "${package_name}"
+          (
+            cd dist
+            cmake -E tar cf "artifacts/${package_name}.zip" --format=zip "${package_name}"
+          )
 
       - name: Upload Windows artifact
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop'
